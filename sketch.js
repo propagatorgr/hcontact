@@ -7,7 +7,9 @@ let x = 0;
 let v = 0;
 let running = false;
 let paused = false;
-
+let phase = 0;   // 0: idle, 1: ταλάντωση, 2: ολίσθηση
+let x2 = 0;
+let v2 = 0;
 // ===== ΠΑΡΑΜΕΤΡΟΙ =====
 let m1, m2, k, mu, E;
 
@@ -53,6 +55,34 @@ function draw() {
     textSize(22);
     text("Χάσιμο επαφής", width / 2 - 90, 35);
   }
+  if (phase === 1) {
+  const a = -omega * omega * x;
+  v += a * dt;
+  x += v * dt;
+
+  if (Math.abs(x) >= xCrit) {
+    // ΧΑΝΕΤΑΙ Η ΕΠΑΦΗ
+    phase = 2;
+
+    // αρχικές συνθήκες Σ2
+    x2 = 0;
+    v2 = v;
+
+    // σταματά η ταλάντωση
+    v = 0;
+  }
+}
+  if (phase === 2) {
+  const a2 = -mu * g * Math.sign(v2);
+  v2 += a2 * dt;
+  x2 += v2 * dt;
+
+  // σταμάτησε η ολίσθηση
+  if (Math.sign(v2) !== Math.sign(v2 + a2 * dt)) {
+    v2 = 0;
+    // εδώ αργότερα: phase = 3 (πτώση)
+  }
+}
 }
 
 function readUI() {
@@ -116,11 +146,17 @@ function drawSystem() {
 let springLeft = X + W1 / 2;   // δεξί άκρο κάτω σώματος
 let springRight = 770;         // αριστερό άκρο τοίχου
 let ySpring = Y - H1 / 2;
-
+let X1 = X0 + x * scale;        // Σ1
+let X2 = X1 + x2 * scale;      // Σ2
 stroke(0);
 noFill();
 beginShape();
 vertex(springLeft, ySpring);
+// Σ1
+rect(X1 - W1/2, Y - H1, W1, H1);
+
+// Σ2
+rect(X2 - W2/2, Y - H1 - H2, W2, H2);
 
 let coils = 8;
 for (let i = 1; i <= coils * 2; i++) {
