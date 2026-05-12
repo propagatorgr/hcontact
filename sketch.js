@@ -78,6 +78,7 @@ function draw() {
     if (Math.abs(x) >= xCrit) {
       phase = 1.5;
       slideDir = Math.sign(x) || 1;
+      lockForPauseResumeOnly();
     }
   }
 
@@ -251,4 +252,18 @@ function drawCriticalLines(xCrit) {
   line(X0 + xCrit * scale, Y - 90, X0 + xCrit * scale, Y + 30);
   line(X0 - xCrit * scale, Y - 90, X0 - xCrit * scale, Y + 30);
   drawingContext.setLineDash([]);
+}
+function lockForPauseResumeOnly() {
+  // Κουμπιά
+  startBtn.disabled  = true;
+  stopBtn.disabled   = true;
+  resumeBtn.disabled = false;
+  resetBtn.disabled  = false;
+
+  // Sliders
+  m1El.disabled = true;
+  m2El.disabled = true;
+  kEl.disabled  = true;
+  muEl.disabled = true;
+  EEl.disabled  = true;
 }
