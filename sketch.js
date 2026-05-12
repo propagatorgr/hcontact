@@ -2,18 +2,20 @@
 const g = 9.81;
 const dt = 0.016;
 
-// ================= ΚΑΤΑΣΤΑΣΕΙΣ =================
-// 0: idle
+// ================= ΦΑΣΕΙΣ =================
+// 0: αναμονή
 // 1: ταλάντωση
-// 1.5: παύση μετά από χάσιμο επαφής
+// 1.5: παύση (χάσιμο επαφής)
 // 2: ολίσθηση Σ2
 let phase = 0;
 
-// ================= ΜΕΤΑΒΛΗΤΕΣ ΚΙΝΗΣΗΣ =================
+// ================= ΚΙΝΗΣΗ =================
 let x = 0;      // θέση Σ1
 let v = 0;      // ταχύτητα Σ1
-let x2 = 0;     // σχετική μετατόπιση Σ2 πάνω στο Σ1
+
+let x2 = 0;     // σχετική θέση Σ2 πάνω στο Σ1
 let v2 = 0;     // ταχύτητα Σ2
+let slideDir = 0;  // κατεύθυνση ολίσθησης (+1 / -1)
 
 // ================= ΠΑΡΑΜΕΤΡΟΙ =================
 let m1, m2, k, mu, E;
@@ -51,19 +53,21 @@ function draw() {
     if (Math.abs(x) >= xCrit) {
       // ΧΑΝΕΤΑΙ Η ΕΠΑΦΗ → ΠΑΥΣΗ
       phase = 1.5;
-      v2 = v;   // αποθηκεύουμε ταχύτητα Σ2
+
+      slideDir = Math.sign(x); // προς τα πού "φεύγει" το Σ2
       v = 0;
     }
   }
 
   // ===== ΟΛΙΣΘΗΣΗ Σ2 =====
   if (phase === 2) {
-    const a2 = -mu * g * Math.sign(v2);
+    const a2 = mu * g * slideDir;
     v2 += a2 * dt;
     x2 += v2 * dt;
 
-    if (Math.sign(v2) !== Math.sign(v2 + a2 * dt)) {
-      v2 = 0;   // σταμάτησε η ολίσθηση
+    // ΣΤΑΜΑΤΑ όταν μηδενιστεί η ταχύτητα
+    if (v2 * slideDir <= 0) {
+      v2 = 0;
     }
   }
 
@@ -71,9 +75,9 @@ function draw() {
   drawSystem();
 
   if (phase === 1.5) {
-    fill(200, 0, 0);
+    fill(200,0,0);
     textSize(22);
-    text("Χάσιμο επαφής", width / 2 - 90, 35);
+    text("Χάσιμο επαφής", width/2 - 90, 35);
   }
 }
 
@@ -83,6 +87,8 @@ function startMotion() {
 
   x = 0;
   x2 = 0;
+  v2 = 0;
+
   v = Math.sqrt(2 * E / (m1 + m2));
   phase = 1;
 
@@ -92,7 +98,11 @@ function startMotion() {
 function resumeMotion() {
   if (phase !== 1.5) return;
 
-  phase = 2;   // ξεκινά η ολίσθηση
+  // ξεκινά ολίσθηση από ΗΡΕΜΙΑ λόγω τριβής
+  v2 = 0;
+  x2 = 0;
+
+  phase = 2;
 }
 
 function stopMotion() {
@@ -134,7 +144,7 @@ function lockSliders(lock) {
   });
 }
 
-// ================= ΣΧΕΔΙΑΣΗ ΣΥΣΤΗΜΑΤΟΣ =================
+// ================= ΣΧΕΔΙΑΣΗ =================
 function drawSystem() {
   const X1 = X0 + x * scale;
   const X2 = X1 + x2 * scale;
@@ -160,35 +170,32 @@ function drawSystem() {
   fill(120);
   rect(X2 - W2/2, Y - H1 - H2, W2, H2);
 
-  // ===== ΕΛΑΤΗΡΙΟ =====
+  // === ΕΛΑΤΗΡΙΟ ===
   stroke(0);
   noFill();
   beginShape();
 
-  let springLeft = X1 + W1 / 2;
+  let springLeft = X1 + W1/2;
   let springRight = 770;
-  let ySpring = Y - H1 / 2;
+  let yS = Y - H1/2;
 
-  vertex(springLeft, ySpring);
+  vertex(springLeft, yS);
   for (let i = 1; i <= 16; i++) {
     let t = i / 16;
     let px = lerp(springLeft, springRight, t);
-    let py = ySpring + (i % 2 === 0 ? -10 : 10);
+    let py = yS + (i % 2 === 0 ? -10 : 10);
     vertex(px, py);
   }
-  vertex(springRight, ySpring);
+  vertex(springRight, yS);
   endShape();
 }
 
 function drawCriticalLines(xCrit) {
   stroke(0,120);
   drawingContext.setLineDash([6,6]);
-
   let xp = X0 + xCrit * scale;
   let xm = X0 - xCrit * scale;
-
   line(xp, Y - 90, xp, Y + 30);
   line(xm, Y - 90, xm, Y + 30);
-
   drawingContext.setLineDash([]);
 }
