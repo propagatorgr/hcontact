@@ -6,15 +6,14 @@ const dt = 0.016;
 // 0: idle
 // 1: ταλάντωση (Σ1 + Σ2)
 // 1.5: παύση (χάσιμο επαφής)
-// 2: Σ1 συνεχίζει ΑΑΤ, Σ2 ολίσθηση
+// 2: Σ1 ΑΑΤ, Σ2 ολίσθηση
+// 3: Σ2 πτώση
 let phase = 0;
 
 // ================= ΚΙΝΗΣΗ =================
-let x = 0;      // θέση Σ1
-let v = 0;      // ταχύτητα Σ1
-
-let x2 = 0;     // σχετική θέση Σ2 πάνω στο Σ1
-let v2 = 0;     // ταχύτητα Σ2
+let x = 0, v = 0;
+let x2 = 0, v2 = 0;
+let y2 = 0, vy2 = 0;
 let slideDir = 0;
 
 // ================= ΠΑΡΑΜΕΤΡΟΙ =================
@@ -35,7 +34,6 @@ function setup() {
   const c = createCanvas(900, 300);
   c.parent("canvas-holder");
 
-  // DOM elements
   m1El = document.getElementById("m1");
   m2El = document.getElementById("m2");
   kEl  = document.getElementById("k");
@@ -62,33 +60,38 @@ function draw() {
   const omega1  = Math.sqrt(k / m1);
   const xCrit   = mu * g / (omega12 * omega12);
 
-  // ===== ΤΑΛΑΝΤΩΣΗ Σ1+Σ2 =====
   if (phase === 1) {
     const a = -omega12 * omega12 * x;
     v += a * dt;
     x += v * dt;
 
     if (Math.abs(x) >= xCrit) {
-      phase = 1.5;               // παύση
-      slideDir = Math.sign(x);   // κατεύθυνση ολίσθησης Σ2
+      phase = 1.5;
+      slideDir = Math.sign(x);
     }
   }
 
-  // ===== Σ1 ΜΟΝΟ ΤΟΥ + ΟΛΙΣΘΗΣΗ Σ2 =====
-  if (phase === 2) {
-    // ΑΑΤ Σ1 μόνο
+  if (phase === 2 || phase === 3) {
+    // Σ1 συνεχίζει ΑΑΤ μόνο του
     const a1 = -omega1 * omega1 * x;
     v += a1 * dt;
     x += v * dt;
+  }
 
-    // Ολίσθηση Σ2
+  if (phase === 2) {
     const a2 = mu * g * slideDir;
     v2 += a2 * dt;
     x2 += v2 * dt;
 
-    if (v2 * slideDir <= 0) {
-      v2 = 0;
+    if (Math.abs(x2) >= W1 / 2) {
+      phase = 3;
+      vy2 = 0;
     }
+  }
+
+  if (phase === 3) {
+    vy2 += g * dt;
+    y2 += vy2 * dt;
   }
 
   drawCriticalLines(xCrit);
@@ -110,6 +113,9 @@ function startMotion() {
   x2 = 0;
   v2 = 0;
 
+  y2 = Y - H1 - H2;
+  vy2 = 0;
+
   phase = 1;
   lockSliders(true);
 }
@@ -117,8 +123,11 @@ function startMotion() {
 function resumeMotion() {
   if (phase !== 1.5) return;
 
-  v2 = 0;
   x2 = 0;
+  v2 = 0;
+  y2 = Y - H1 - H2;
+  vy2 = 0;
+
   phase = 2;
 }
 
@@ -128,10 +137,9 @@ function stopMotion() {
 }
 
 function resetSystem() {
-  x = 0;
-  v = 0;
-  x2 = 0;
-  v2 = 0;
+  x = 0; v = 0;
+  x2 = 0; v2 = 0;
+  y2 = Y - H1 - H2; vy2 = 0;
   phase = 0;
 
   EEl.value = 0;
@@ -170,16 +178,16 @@ function drawSystem() {
   rect(770, Y - 70, 25, 70);
 
   fill(200,120,120);
-  rect(X1 - W1 / 2, Y - H1, W1, H1);
+  rect(X1 - W1/2, Y - H1, W1, H1);
 
   fill(0);
   noStroke();
-  ellipse(X1, Y - H1 / 2, 7, 7);
+  ellipse(X1, Y - H1/2, 7, 7);
 
   fill(120);
-  rect(X2 - W2 / 2, Y - H1 - H2, W2, H2);
+  rect(X2 - W2/2, y2, W2, H2);
 
-  // Ελατήριο
+  // ελατήριο
   stroke(0);
   noFill();
   beginShape();
