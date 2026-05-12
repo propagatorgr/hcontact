@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <title>Ταλάντωση με τριβή και απώλεια επαφής</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-  <script src="sketch.js" defer></script>
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.minικό σου sketch -->
+  sketch.js</script>
 
   <style>
     body {
@@ -42,8 +43,10 @@
 
 <body>
 
+  <!-- Canvas -->
   <div id="canvas-holder"></div>
 
+  <!-- Controls -->
   <div id="controls">
 
     <div class="sliderBlock">
@@ -73,12 +76,14 @@
     <hr>
 
     <div class="sliderBlock">
-      <label>Ενέργεια Ε (J)</label>
+      <label>Ενέργεια E (J)</label>
       <input type="range" id="ESlider" min="0" max="20" step="0.2" value="0">
       <span id="Ev">0</span>
     </div>
 
+    <!-- Κουμπιά -->
     <button id="startBtn">START</button>
+    <button id="stopBtn">STOP</button>
     <button id="resetBtn">RESET</button>
 
   </div>
