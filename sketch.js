@@ -44,9 +44,11 @@ function draw() {
     x += v * 0.016;
 
     // έλεγχος στο άκρο
-    if (Math.abs(v) < 0.002 && Math.abs(x) >= xCrit) {
-      paused = true;
-    }
+    
+if (Math.abs(x) >= xCrit) {
+  paused = true;
+}
+
   }
 
   drawCriticalLines(xCrit);
