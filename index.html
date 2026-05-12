@@ -4,14 +4,17 @@
   <meta charset="utf-8">
   <title>Σύστημα με ελατήριο και τριβή</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-  <script src="sketch.js"></script>
+  https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.jsscript>
+  sketch.js
 
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 20px;
+    }
+    #canvas-holder {
+      margin: 0 auto;
     }
     #controls {
       margin-top: 15px;
@@ -36,8 +39,10 @@
 
 <body>
 
-  <!-- Το canvas μπαίνει εδώ από το sketch.js -->
+  <!-- ✅ ΤΟ CANVAS ΕΔΩ -->
+  <div id="canvas-holder"></div>
 
+  <!-- ✅ SLIDERS ΚΑΤΩ -->
   <div id="controls">
     <div class="sliderBlock">
       <label>m₁ (kg)</label>
