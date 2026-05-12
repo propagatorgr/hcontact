@@ -112,6 +112,27 @@ function drawSystem() {
 
   fill(120);
   rect(X - W2/2, Y - H1 - H2, W2, H2);
+  // === ΕΛΑΤΗΡΙΟ ===
+let springLeft = X + W1 / 2;   // δεξί άκρο κάτω σώματος
+let springRight = 770;         // αριστερό άκρο τοίχου
+let ySpring = Y - H1 / 2;
+
+stroke(0);
+noFill();
+beginShape();
+vertex(springLeft, ySpring);
+
+let coils = 8;
+for (let i = 1; i <= coils * 2; i++) {
+  let t = i / (coils * 2);
+  let px = lerp(springLeft, springRight, t);
+  let py = ySpring + (i % 2 === 0 ? -10 : 10);
+  vertex(px, py);
+}
+
+vertex(springRight, ySpring);
+endShape();
+
 }
 
 function drawCriticalLines(xCrit) {
