@@ -24,7 +24,7 @@ const W2 = 40, H2 = 18;
 
 function setup() {
   let c = createCanvas(900, 300);
-  c.parent(document.body);
+ c.parent("canvas-holder");
 }
 
 function draw() {
