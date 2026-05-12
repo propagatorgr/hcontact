@@ -1,17 +1,17 @@
-// ================= ΣΤΑΘΕΡΕΣ =================
+// ===== ΣΤΑΘΕΡΕΣ =====
 const g = 9.81;
 const dt = 0.016;
 
-// ================= ΚΑΤΑΣΤΑΣΗ =================
+// ===== ΚΑΤΑΣΤΑΣΗ =====
 let x = 0;
 let v = 0;
 let running = false;
 let paused = false;
 
-// ================= ΠΑΡΑΜΕΤΡΟΙ =================
+// ===== ΠΑΡΑΜΕΤΡΟΙ =====
 let m1, m2, k, mu, E;
 
-// ================= ΣΧΕΔΙΑΣΗ =================
+// ===== ΣΧΕΔΙΑΣΗ =====
 const scale = 300;
 const X0 = 260;
 const Y = 180;
@@ -22,9 +22,9 @@ function setup() {
   const c = createCanvas(900, 300);
   c.parent("canvas-holder");
 
-  startBtn.onclick = startMotion;
-  stopBtn.onclick  = stopMotion;
-  resetBtn.onclick = resetSystem;
+  document.getElementById("startBtn").onclick = startMotion;
+  document.getElementById("stopBtn").onclick  = stopMotion;
+  document.getElementById("resetBtn").onclick = resetSystem;
 }
 
 function draw() {
@@ -42,22 +42,39 @@ function draw() {
     if (Math.abs(x) >= xCrit) {
       paused = true;
       running = false;
-      showLoss();
     }
   }
 
   drawCriticalLines(xCrit);
   drawSystem();
+
+  if (paused) {
+    fill(200, 0, 0);
+    textSize(22);
+    text("Χάσιμο επαφής", width / 2 - 90, 35);
+  }
+}
+
+function readUI() {
+  m1 = +document.getElementById("m1").value;
+  m2 = +document.getElementById("m2").value;
+  k  = +document.getElementById("k").value;
+  mu = +document.getElementById("mu").value;
+  E  = +document.getElementById("ESlider").value;
+
+  document.getElementById("m1v").textContent = m1;
+  document.getElementById("m2v").textContent = m2;
+  document.getElementById("kv").textContent  = k;
+  document.getElementById("muv").textContent = mu.toFixed(2);
+  document.getElementById("Ev").textContent  = E.toFixed(1);
 }
 
 function startMotion() {
   if (running) return;
-
   x = 0;
   v = Math.sqrt(2 * E / (m1 + m2));
   running = true;
   paused = false;
-
   lockSliders(true);
 }
 
@@ -71,31 +88,38 @@ function resetSystem() {
   v = 0;
   running = false;
   paused = false;
-
-  ESlider.value = 0;
-  Ev.textContent = "0";
-
+  document.getElementById("ESlider").value = 0;
   lockSliders(false);
 }
 
 function lockSliders(lock) {
-  m1.disabled = lock;
-  m2.disabled = lock;
-  k.disabled  = lock;
-  mu.disabled = lock;
-  ESlider.disabled = lock;
+  ["m1","m2","k","mu","ESlider"].forEach(id=>{
+    document.getElementById(id).disabled = lock;
+  });
 }
 
-function readUI() {
-  m1 = +m1El.value;
-  m2 = +m2El.value;
-  k  = +kEl.value;
-  mu = +muEl.value;
-  E  = +ESlider.value;
+// ===== ΣΧΕΔΙΟ =====
+function drawSystem() {
+  const X = X0 + x * scale;
+  stroke(0); line(0, Y, width, Y);
+  fill(180); rect(770, Y - 70, 25, 70);
 
-  m1v.textContent = m1;
-  m2v.textContent = m2;
-  kv.textContent  = k;
-  muv.textContent = mu.toFixed(2);
-  Ev.textContent  = E.toFixed(1);
+  fill(200,120,120);
+  rect(X - W1/2, Y - H1, W1, H1);
+
+  fill(0); noStroke();
+  ellipse(X, Y - H1/2, 7, 7);
+
+  fill(120);
+  rect(X - W2/2, Y - H1 - H2, W2, H2);
+}
+
+function drawCriticalLines(xCrit) {
+  stroke(0,120);
+  drawingContext.setLineDash([6,6]);
+  const xp = X0 + xCrit * scale;
+  const xm = X0 - xCrit * scale;
+  line(xp, Y - 90, xp, Y + 30);
+  line(xm, Y - 90, xm, Y + 30);
+  drawingContext.setLineDash([]);
 }
