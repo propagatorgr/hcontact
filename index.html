@@ -4,8 +4,26 @@
   <meta charset="utf-8">
   <title>Ταλάντωση – Απώλεια επαφής – Ολίσθηση – Πτώση</title>
 
+  <!-- p5.js -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+  <!-- sketch -->
   <script src="sketch.js" defer></script>
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      options: {
+        renderActions: {
+          addMenu: []
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
   <style>
     body {
@@ -13,34 +31,40 @@
       text-align: center;
       margin: 20px;
     }
+
     #canvas-holder {
       margin: 0 auto;
     }
+
     #controls {
       width: 900px;
       margin: 15px auto;
     }
+
     .sliderBlock {
       margin: 8px 0;
     }
+
     label {
       display: inline-block;
       width: 160px;
       text-align: right;
       margin-right: 10px;
     }
+
     input[type="range"] {
       width: 300px;
     }
+
     button {
       margin: 10px;
       padding: 6px 16px;
       font-size: 14px;
     }
+
     .formula {
-      font-family: "Courier New", monospace;
-      font-size: 14px;
-      margin: 4px 0;
+      font-size: 20px;
+      margin: 10px 0;
     }
   </style>
 </head>
@@ -83,15 +107,30 @@
       <span id="Ev">0.0</span>
     </div>
 
-    <!-- ΤΥΠΟΙ ΚΑΙ ΤΙΜΕΣ -->
-    <div class="formula">A = √(2E / k)</div>
-    <div class="formula">A = <span id="Av">0.000</span> m</div>
+    <hr>
 
-    <div class="formula">x<sub>crit</sub> = μg / ω²</div>
-    <div class="formula">x<sub>crit</sub> = <span id="Xcv">0.000</span> m</div>
+    <!-- ΜΑΘΗΜΑΤΙΚΕΣ ΕΞΙΣΩΣΕΙΣ -->
+    <div class="formula">
+      $$A = \sqrt{\frac{2E}{k}}$$
+    </div>
+    <div class="formula">
+      $$A = <span id="Av">0.000</span>\ \text{m}$$
+    </div>
+
+    <div class="formula">
+      $$x_{\text{crit}} = \frac{\mu g}{\omega^2}$$
+    </div>
+    <div class="formula">
+      $$x_{\text{crit}} = <span id="Xcv">0.000</span>\ \text{m}$$
+    </div>
+
+    <div class="formula">
+      $$\omega = \sqrt{\frac{k}{m_1 + m_2}}$$
+    </div>
 
     <hr>
 
+    <!-- ΚΟΥΜΠΙΑ -->
     <button id="startBtn">START</button>
     <button id="resumeBtn">RESUME</button>
     <button id="stopBtn">STOP</button>
