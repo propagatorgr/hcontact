@@ -1,21 +1,21 @@
 // ================= ΣΤΑΘΕΡΕΣ =================
-const g = 9.81;
+const g  = 9.81;
 const dt = 0.016;
 
 // ================= ΦΑΣΕΙΣ =================
 // 0: idle
 // 1: ταλάντωση (Σ1+Σ2)
 // 1.5: παύση (χάσιμο επαφής)
-// 2: Σ1 ΑΑΤ, Σ2 ολίσθηση
-// 3: Σ2 πτώση
+// 2: ολίσθηση Σ2, Σ1 συνεχίζει
+// 3: πτώση Σ2
+// 4: τελικό στοπ
 let phase = 0;
 
 // ================= ΚΙΝΗΣΗ =================
-let x = 0, v = 0;        // Σ1
-let x2 = 0, v2 = 0;      // Σ2 οριζόντια (σχετική)
-let y2 = 0, vy2 = 0;     // Σ2 κατακόρυφα
-let slideDir = 1;
-let slideTime = 0;
+let x = 0, v = 0;
+let x2 = 0, v2 = 0;
+let y2 = 0, vy2 = 0;
+let slideDir = 1, slideTime = 0;
 
 // ================= ΠΑΡΑΜΕΤΡΟΙ =================
 let m1, m2, k, mu, E;
@@ -23,6 +23,7 @@ let m1, m2, k, mu, E;
 // ================= DOM =================
 let m1El, m2El, kEl, muEl, EEl;
 let m1vEl, m2vEl, kvEl, muvEl, EvEl;
+let AvEl, XcvEl;
 
 // ================= ΣΧΕΔΙΑΣΗ =================
 const scale = 300;
@@ -35,7 +36,6 @@ function setup() {
   const c = createCanvas(900, 300);
   c.parent("canvas-holder");
 
-  // DOM
   m1El = document.getElementById("m1");
   m2El = document.getElementById("m2");
   kEl  = document.getElementById("k");
@@ -48,12 +48,14 @@ function setup() {
   muvEl = document.getElementById("muv");
   EvEl  = document.getElementById("Ev");
 
+  AvEl  = document.getElementById("Av");
+  XcvEl = document.getElementById("Xcv");
+
   startBtn.onclick  = startMotion;
   resumeBtn.onclick = resumeMotion;
   stopBtn.onclick   = stopMotion;
   resetBtn.onclick  = resetSystem;
 
-  // αρχική σωστή θέση Σ2
   y2 = Y - H1 - H2;
 }
 
@@ -65,79 +67,85 @@ function draw() {
   const omega1  = Math.sqrt(k / m1);
   const xCrit   = mu * g / (omega12 * omega12);
 
-  // ===== ΤΑΛΑΝΤΩΣΗ Σ1+Σ2 =====
+  // ===== ΤΑΛΑΝΤΩΣΗ =====
   if (phase === 1) {
-    const a = -omega12 * omega12 * x;
-    v += a * dt;
+    v += -omega12 * omega12 * x * dt;
     x += v * dt;
 
     if (Math.abs(x) >= xCrit) {
-      phase = 1.5;                 // ΠΑΥΣΗ
+      phase = 1.5;
       slideDir = Math.sign(x) || 1;
     }
   }
 
-  // ===== ΜΕΤΑ ΤΟ RESUME: Σ1 συνεχίζει =====
+  // ===== Σ1 συνεχίζει =====
   if (phase === 2 || phase === 3) {
-    const a1 = -omega1 * omega1 * x;
-    v += a1 * dt;
+    v += -omega1 * omega1 * x * dt;
     x += v * dt;
   }
 
-  // ===== ΟΛΙΣΘΗΣΗ Σ2 =====
+  // ===== ΟΛΙΣΘΗΣΗ =====
   if (phase === 2) {
     slideTime += dt;
-    const a2 = mu * g * slideDir;
-    v2 += a2 * dt;
+    v2 += mu * g * slideDir * dt;
     x2 += v2 * dt;
 
-    // μετά από λίγο -> πτώση
     if (slideTime > 0.5) {
       phase = 3;
       vy2 = 0;
     }
   }
 
-  // ===== ΠΤΩΣΗ Σ2 =====
+  // ===== ΠΤΩΣΗ =====
   if (phase === 3) {
-  vy2 += g * dt;
-  y2  += vy2 * dt;
+    vy2 += g * dt;
+    y2  += vy2 * dt;
 
-  // ----- σύγκρουση με το ελατήριο -----
-  const ySpring = Y - H1 / 2;
-
-  if (y2 + H2 >= ySpring) {
-    // ευθυγράμμιση ακριβώς στο ελατήριο
-    y2 = ySpring - H2;
-
-    // μηδενισμός ταχυτήτων
-    vy2 = 0;
-    v   = 0;
-
-    // τελική παύση
-    phase = 4;   // τελικό στάδιο (όλα σταματούν)
+    const ySpring = Y - H1 / 2;
+    if (y2 + H2 >= ySpring) {
+      y2 = ySpring - H2;
+      vy2 = 0;
+      v   = 0;
+      phase = 4;
+    }
   }
-}
-if (phase === 4) {
-  fill(0, 120, 0);
-  textSize(20);
-  text("Το Σ₂ προσέκρουσε στο ελατήριο", width/2 - 150, 60);
-}
+
   drawCriticalLines(xCrit);
   drawSystem();
 
   if (phase === 1.5) {
-    fill(200,0,0);
+    fill(200, 0, 0);
     textSize(22);
     text("Χάσιμο επαφής", width/2 - 90, 35);
   }
 }
 
-// ================= ΚΟΥΜΠΙΑ =================
+function readUI() {
+  m1 = +m1El.value;
+  m2 = +m2El.value;
+  k  = +kEl.value;
+  mu = +muEl.value;
+  E  = +EEl.value;
+
+  m1vEl.textContent = m1;
+  m2vEl.textContent = m2;
+  kvEl.textContent  = k;
+  muvEl.textContent = mu.toFixed(2);
+  EvEl.textContent  = E.toFixed(1);
+
+  const A = Math.sqrt(2 * E / k);
+  AvEl.textContent  = A.toFixed(3);
+
+  const omega12 = Math.sqrt(k / (m1 + m2));
+  const xCrit = mu * g / (omega12 * omega12);
+  XcvEl.textContent = xCrit.toFixed(3);
+}
+
 function startMotion() {
   if (phase !== 0) return;
 
-  x = 0; v = Math.sqrt(2 * E / (m1 + m2));
+  x = 0;
+  v = Math.sqrt(2 * E / (m1 + m2));
   x2 = 0; v2 = 0;
   y2 = Y - H1 - H2; vy2 = 0;
   slideTime = 0;
@@ -152,7 +160,6 @@ function resumeMotion() {
   x2 = 0; v2 = 0;
   y2 = Y - H1 - H2; vy2 = 0;
   slideTime = 0;
-
   phase = 2;
 }
 
@@ -162,30 +169,12 @@ function stopMotion() {
 }
 
 function resetSystem() {
-  x = 0; v = 0;
-  x2 = 0; v2 = 0;
-  y2 = Y - H1 - H2; vy2 = 0;
-  slideTime = 0;
+  x = v = x2 = v2 = vy2 = slideTime = 0;
+  y2 = Y - H1 - H2;
   phase = 0;
-
   EEl.value = 0;
-  EvEl.textContent = "0";
+  EvEl.textContent = "0.0";
   lockSliders(false);
-}
-
-// ================= UI =================
-function readUI() {
-  m1 = +m1El.value;
-  m2 = +m2El.value;
-  k  = +kEl.value;
-  mu = +muEl.value;
-  E  = +EEl.value;
-
-  m1vEl.textContent = m1;
-  m2vEl.textContent = m2;
-  kvEl.textContent  = k;
-  muvEl.textContent = mu.toFixed(2);
-  EvEl.textContent  = E.toFixed(1);
 }
 
 function lockSliders(lock) {
@@ -203,33 +192,30 @@ function drawSystem() {
   fill(180);
   rect(770, Y - 70, 25, 70);
 
-  // Σ1
   fill(200,120,120);
   rect(X1 - W1/2, Y - H1, W1, H1);
 
-  // κέντρο μάζας Σ1
-  fill(0); noStroke();
+  fill(0);
+  noStroke();
   ellipse(X1, Y - H1/2, 7, 7);
 
-  // Σ2
   fill(120);
   rect(X2 - W2/2, y2, W2, H2);
 
-  // ελατήριο
   stroke(0); noFill(); beginShape();
   let a = X1 + W1/2, b = 770, y = Y - H1/2;
   vertex(a, y);
-  for (let i = 1; i <= 16; i++) {
-    let t = i / 16;
-    vertex(lerp(a, b, t), y + (i % 2 ? 10 : -10));
+  for (let i=1;i<=16;i++){
+    let t=i/16;
+    vertex(lerp(a,b,t), y+(i%2?10:-10));
   }
-  vertex(b, y); endShape();
+  vertex(b,y); endShape();
 }
 
 function drawCriticalLines(xCrit) {
   stroke(0,120);
   drawingContext.setLineDash([6,6]);
-  line(X0 + xCrit * scale, Y - 90, X0 + xCrit * scale, Y + 30);
-  line(X0 - xCrit * scale, Y - 90, X0 - xCrit * scale, Y + 30);
+  line(X0 + xCrit*scale, Y-90, X0 + xCrit*scale, Y+30);
+  line(X0 - xCrit*scale, Y-90, X0 - xCrit*scale, Y+30);
   drawingContext.setLineDash([]);
 }
