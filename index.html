@@ -5,12 +5,10 @@
   <title>Ταλάντωση – Απώλεια επαφής</title>
 
   <!-- p5.js -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.jsch -->
+  <script src="skpt>
 
-  <!-- sketch -->
-  <script src="sketch.js" defer></script>
-
-  <!-- MathJax (INLINE μόνο) -->
+  <!-- MathJax (INLINE math μόνο) -->
   <script>
     window.MathJax = {
       tex: {
@@ -26,53 +24,99 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 16px;
       text-align: center;
-      margin: 20px;
     }
 
     #canvas-holder {
-      margin: 0 auto;
+      max-width: 100%;
+      margin: 0 auto 12px auto;
     }
 
+    /* ---------- CONTROLS LAYOUT ---------- */
     #controls {
-      width: 900px;
-      margin: 15px auto;
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .sliderBlock {
-      margin: 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     label {
-      display: inline-block;
-      width: 160px;
+      min-width: 140px;
       text-align: right;
-      margin-right: 10px;
     }
 
     input[type="range"] {
-      width: 300px;
+      width: 260px;
+      max-width: 70vw;
     }
 
-    button {
-      margin: 10px;
-      padding: 6px 16px;
-      font-size: 14px;
+    hr {
+      width: 100%;
+      max-width: 600px;
+      margin: 10px auto;
     }
 
-    .formula {
-      font-size: 18px;
-      margin: 4px 0;
+    /* ---------- MATH LINES ---------- */
+    .mathline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 2px 0;
+    }
+
+    .formula mjx-container {
+      font-size: 85% !important;
     }
 
     .value {
       font-size: 16px;
-      margin-bottom: 6px;
     }
 
-    /* μικραίνει ΜΟΝΟ τους MathJax τύπους */
-    .formula mjx-container {
-      font-size: 85% !important;
+    /* ---------- BUTTONS ---------- */
+    .buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      padding: 6px 16px;
+      font-size: 14px;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 600px) {
+      label {
+        min-width: unset;
+        text-align: center;
+      }
+
+      .sliderBlock {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      input[type="range"] {
+        width: 90vw;
+      }
+
+      .value {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -83,6 +127,7 @@
 
   <div id="controls">
 
+    <!-- SLIDERS -->
     <div class="sliderBlock">
       <label>m₁ (kg)</label>
       <input type="range" id="m1" min="1" max="8" step="0.5" value="4">
@@ -117,35 +162,32 @@
 
     <hr>
 
-    <!-- ΤΥΠΟΙ (INLINE, ΟΡΙΖΟΝΤΙΟΙ) -->
-    <div class="formula">
-      $A=\sqrt{\frac{2E}{k}}$
-    </div>
-    <div class="value">
-      A = <span id="Av">0.000</span> m
+    <!-- MATH + VALUES (ΟΡΙΖΟΝΤΙΑ) -->
+    <div class="mathline">
+      <span class="formula">$A=\sqrt{\frac{2E}{k}}$</span>
+      <span class="value">⇒ A = <span id="Av">0.000</span> m</span>
     </div>
 
-    <div class="formula">
-      $x_{\text{crit}}=\frac{\mu g}{\omega^2}$
-    </div>
-    <div class="value">
-      x<sub>crit</sub> = <span id="Xcv">0.000</span> m
+    <div class="mathline">
+      <span class="formula">$x_{\text{crit}}=\frac{\mu g}{\omega^2}$</span>
+      <span class="value">⇒ x<sub>crit</sub> = <span id="Xcv">0.000</span> m</span>
     </div>
 
-    <div class="formula">
-      $\omega=\sqrt{\frac{k}{m_1+m_2}}$
+    <div class="mathline">
+      <span class="formula">$\omega=\sqrt{\frac{k}{m_1+m_2}}$</span>
     </div>
 
     <hr>
 
-    <!-- ΚΟΥΜΠΙΑ -->
-    <button id="startBtn">START</button>
-    <button id="resumeBtn">RESUME</button>
-    <button id="stopBtn">STOP</button>
-    <button id="resetBtn">RESET</button>
+    <!-- BUTTONS -->
+    <div class="buttons">
+      <button id="startBtn">START</button>
+      <button id="resumeBtn">RESUME</button>
+      <button id="stopBtn">STOP</button>
+      <button id="resetBtn">RESET</button>
+    </div>
 
   </div>
 
 </body>
 </html>
-
