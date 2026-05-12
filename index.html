@@ -10,13 +10,15 @@
   <!-- sketch -->
   <script src="sketch.js" defer></script>
 
-  <!-- MathJax -->
+  <!-- MathJax (INLINE μόνο) -->
   <script>
     window.MathJax = {
       tex: {
         inlineMath: [['$', '$'], ['\\(', '\\)']]
       },
-      options: { renderActions: { addMenu: [] } }
+      options: {
+        renderActions: { addMenu: [] }
+      }
     };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
@@ -27,41 +29,51 @@
       text-align: center;
       margin: 20px;
     }
+
     #canvas-holder {
       margin: 0 auto;
     }
+
     #controls {
       width: 900px;
       margin: 15px auto;
     }
+
     .sliderBlock {
-      margin: 8px 0;
+      margin: 6px 0;
     }
+
     label {
       display: inline-block;
       width: 160px;
       text-align: right;
       margin-right: 10px;
     }
+
     input[type="range"] {
       width: 300px;
     }
+
     button {
       margin: 10px;
       padding: 6px 16px;
       font-size: 14px;
     }
-    .formula {
-      font-size: 20px;
-      margin: 10px 0;
-    }
-    .value {
-      font-size: 18px;
-    }
-    .formula mjx-container {
-  font-size: 85% !important;
-}
 
+    .formula {
+      font-size: 18px;
+      margin: 4px 0;
+    }
+
+    .value {
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    /* μικραίνει ΜΟΝΟ τους MathJax τύπους */
+    .formula mjx-container {
+      font-size: 85% !important;
+    }
   </style>
 </head>
 
@@ -105,23 +117,23 @@
 
     <hr>
 
-    <!-- ΕΞΙΣΩΣΕΙΣ (MathJax) -->
+    <!-- ΤΥΠΟΙ (INLINE, ΟΡΙΖΟΝΤΙΟΙ) -->
     <div class="formula">
-      $$A = \sqrt{\frac{2E}{k}}$$
+      $A=\sqrt{\frac{2E}{k}}$
     </div>
     <div class="value">
       A = <span id="Av">0.000</span> m
     </div>
 
     <div class="formula">
-      $$x_{\text{crit}} = \frac{\mu g}{\omega^2}$$
+      $x_{\text{crit}}=\frac{\mu g}{\omega^2}$
     </div>
     <div class="value">
       x<sub>crit</sub> = <span id="Xcv">0.000</span> m
     </div>
 
     <div class="formula">
-      $$\omega = \sqrt{\frac{k}{m_1 + m_2}}$$
+      $\omega=\sqrt{\frac{k}{m_1+m_2}}$
     </div>
 
     <hr>
@@ -136,3 +148,4 @@
 
 </body>
 </html>
+``
