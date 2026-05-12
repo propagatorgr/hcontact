@@ -5,18 +5,15 @@
   <title>Ταλάντωση – Απώλεια επαφής</title>
 
   <!-- p5.js -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.jsch -->
-  <script src="skpt>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-  <!-- MathJax (INLINE math μόνο) -->
+  <!-- sketch.js -->
+  <script src="sketch.js" defer></script>
+
+  <!-- MathJax (INLINE) -->
   <script>
     window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']]
-      },
-      options: {
-        renderActions: { addMenu: [] }
-      }
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
     };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
@@ -29,17 +26,15 @@
     }
 
     #canvas-holder {
-      max-width: 100%;
-      margin: 0 auto 12px auto;
+      margin-bottom: 12px;
     }
 
-    /* ---------- CONTROLS LAYOUT ---------- */
     #controls {
-      max-width: 1000px;
+      max-width: 900px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .sliderBlock {
@@ -57,21 +52,21 @@
 
     input[type="range"] {
       width: 260px;
-      max-width: 70vw;
+      max-width: 80vw;
     }
 
     hr {
       width: 100%;
       max-width: 600px;
-      margin: 10px auto;
+      margin: 8px auto;
     }
 
-    /* ---------- MATH LINES ---------- */
+    /* --- Math lines --- */
     .mathline {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       margin: 2px 0;
     }
@@ -84,38 +79,31 @@
       font-size: 16px;
     }
 
-    /* ---------- BUTTONS ---------- */
+    /* --- Buttons --- */
     .buttons {
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
       gap: 10px;
-      margin-top: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
     }
 
     button {
-      padding: 6px 16px;
+      padding: 6px 14px;
       font-size: 14px;
     }
 
-    /* ---------- RESPONSIVE ---------- */
+    /* --- Responsive --- */
     @media (max-width: 600px) {
       label {
         min-width: unset;
         text-align: center;
       }
-
       .sliderBlock {
         flex-direction: column;
-        gap: 4px;
       }
-
       input[type="range"] {
         width: 90vw;
-      }
-
-      .value {
-        font-size: 14px;
       }
     }
   </style>
@@ -127,7 +115,6 @@
 
   <div id="controls">
 
-    <!-- SLIDERS -->
     <div class="sliderBlock">
       <label>m₁ (kg)</label>
       <input type="range" id="m1" min="1" max="8" step="0.5" value="4">
@@ -162,7 +149,7 @@
 
     <hr>
 
-    <!-- MATH + VALUES (ΟΡΙΖΟΝΤΙΑ) -->
+    <!-- ΤΥΠΟΙ + ΤΙΜΕΣ (ΟΡΙΖΟΝΤΙΑ) -->
     <div class="mathline">
       <span class="formula">$A=\sqrt{\frac{2E}{k}}$</span>
       <span class="value">⇒ A = <span id="Av">0.000</span> m</span>
@@ -179,7 +166,6 @@
 
     <hr>
 
-    <!-- BUTTONS -->
     <div class="buttons">
       <button id="startBtn">START</button>
       <button id="resumeBtn">RESUME</button>
