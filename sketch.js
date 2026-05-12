@@ -4,17 +4,18 @@ const dt = 0.016;
 
 // ================= ΦΑΣΕΙΣ =================
 // 0: idle
-// 1: ταλάντωση (Σ1 + Σ2)
+// 1: ταλάντωση (Σ1+Σ2)
 // 1.5: παύση (χάσιμο επαφής)
 // 2: Σ1 ΑΑΤ, Σ2 ολίσθηση
 // 3: Σ2 πτώση
 let phase = 0;
 
 // ================= ΚΙΝΗΣΗ =================
-let x = 0, v = 0;
-let x2 = 0, v2 = 0;
-let y2 = 0, vy2 = 0;
-let slideDir = 0;
+let x = 0, v = 0;        // Σ1
+let x2 = 0, v2 = 0;      // Σ2 οριζόντια (σχετική)
+let y2 = 0, vy2 = 0;     // Σ2 κατακόρυφα
+let slideDir = 1;
+let slideTime = 0;
 
 // ================= ΠΑΡΑΜΕΤΡΟΙ =================
 let m1, m2, k, mu, E;
@@ -26,7 +27,7 @@ let m1vEl, m2vEl, kvEl, muvEl, EvEl;
 // ================= ΣΧΕΔΙΑΣΗ =================
 const scale = 300;
 const X0 = 260;
-const Y = 180;
+const Y  = 180;
 const W1 = 60, H1 = 24;
 const W2 = 40, H2 = 18;
 
@@ -34,6 +35,7 @@ function setup() {
   const c = createCanvas(900, 300);
   c.parent("canvas-holder");
 
+  // DOM
   m1El = document.getElementById("m1");
   m2El = document.getElementById("m2");
   kEl  = document.getElementById("k");
@@ -50,6 +52,9 @@ function setup() {
   resumeBtn.onclick = resumeMotion;
   stopBtn.onclick   = stopMotion;
   resetBtn.onclick  = resetSystem;
+
+  // αρχική σωστή θέση Σ2
+  y2 = Y - H1 - H2;
 }
 
 function draw() {
@@ -59,50 +64,53 @@ function draw() {
   const omega12 = Math.sqrt(k / (m1 + m2));
   const omega1  = Math.sqrt(k / m1);
   const xCrit   = mu * g / (omega12 * omega12);
-if (phase === 0) {
-  y2 = Y - H1 - H2;
-}
+
+  // ===== ΤΑΛΑΝΤΩΣΗ Σ1+Σ2 =====
   if (phase === 1) {
     const a = -omega12 * omega12 * x;
     v += a * dt;
     x += v * dt;
 
     if (Math.abs(x) >= xCrit) {
-      phase = 1.5;
-      slideDir = Math.sign(x);
+      phase = 1.5;                 // ΠΑΥΣΗ
+      slideDir = Math.sign(x) || 1;
     }
   }
 
+  // ===== ΜΕΤΑ ΤΟ RESUME: Σ1 συνεχίζει =====
   if (phase === 2 || phase === 3) {
-    // Σ1 συνεχίζει ΑΑΤ μόνο του
     const a1 = -omega1 * omega1 * x;
     v += a1 * dt;
     x += v * dt;
   }
 
+  // ===== ΟΛΙΣΘΗΣΗ Σ2 =====
   if (phase === 2) {
+    slideTime += dt;
     const a2 = mu * g * slideDir;
     v2 += a2 * dt;
     x2 += v2 * dt;
 
-    if (Math.abs(x2) >= W1 / 2) {
+    // μετά από λίγο -> πτώση
+    if (slideTime > 0.5) {
       phase = 3;
       vy2 = 0;
     }
   }
 
+  // ===== ΠΤΩΣΗ Σ2 =====
   if (phase === 3) {
     vy2 += g * dt;
-    y2 += vy2 * dt;
+    y2  += vy2 * dt;
   }
 
   drawCriticalLines(xCrit);
   drawSystem();
 
   if (phase === 1.5) {
-    fill(200, 0, 0);
+    fill(200,0,0);
     textSize(22);
-    text("Χάσιμο επαφής", width / 2 - 90, 35);
+    text("Χάσιμο επαφής", width/2 - 90, 35);
   }
 }
 
@@ -110,13 +118,10 @@ if (phase === 0) {
 function startMotion() {
   if (phase !== 0) return;
 
-  x = 0;
-  v = Math.sqrt(2 * E / (m1 + m2));
-  x2 = 0;
-  v2 = 0;
-
-  y2 = Y - H1 - H2;
-  vy2 = 0;
+  x = 0; v = Math.sqrt(2 * E / (m1 + m2));
+  x2 = 0; v2 = 0;
+  y2 = Y - H1 - H2; vy2 = 0;
+  slideTime = 0;
 
   phase = 1;
   lockSliders(true);
@@ -125,10 +130,9 @@ function startMotion() {
 function resumeMotion() {
   if (phase !== 1.5) return;
 
-  x2 = 0;
-  v2 = 0;
-  y2 = Y - H1 - H2;
-  vy2 = 0;
+  x2 = 0; v2 = 0;
+  y2 = Y - H1 - H2; vy2 = 0;
+  slideTime = 0;
 
   phase = 2;
 }
@@ -142,6 +146,7 @@ function resetSystem() {
   x = 0; v = 0;
   x2 = 0; v2 = 0;
   y2 = Y - H1 - H2; vy2 = 0;
+  slideTime = 0;
   phase = 0;
 
   EEl.value = 0;
@@ -179,30 +184,27 @@ function drawSystem() {
   fill(180);
   rect(770, Y - 70, 25, 70);
 
+  // Σ1
   fill(200,120,120);
   rect(X1 - W1/2, Y - H1, W1, H1);
 
-  fill(0);
-  noStroke();
+  // κέντρο μάζας Σ1
+  fill(0); noStroke();
   ellipse(X1, Y - H1/2, 7, 7);
 
+  // Σ2
   fill(120);
   rect(X2 - W2/2, y2, W2, H2);
 
   // ελατήριο
-  stroke(0);
-  noFill();
-  beginShape();
-  let a = X1 + W1 / 2;
-  let b = 770;
-  let y = Y - H1 / 2;
+  stroke(0); noFill(); beginShape();
+  let a = X1 + W1/2, b = 770, y = Y - H1/2;
   vertex(a, y);
   for (let i = 1; i <= 16; i++) {
     let t = i / 16;
     vertex(lerp(a, b, t), y + (i % 2 ? 10 : -10));
   }
-  vertex(b, y);
-  endShape();
+  vertex(b, y); endShape();
 }
 
 function drawCriticalLines(xCrit) {
