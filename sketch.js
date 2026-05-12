@@ -66,7 +66,10 @@ function draw() {
   const omega12 = Math.sqrt(k / (m1 + m2));
   const omega1  = Math.sqrt(k / m1);
   const xCrit   = mu * g / (omega12 * omega12);
-
+// Υπολογισμός οριακής απομάκρυνσης (πάντα σωστός)
+const omegaDisplay = Math.sqrt(k / (m1 + m2));
+const xCritDisplay = mu * g / (omegaDisplay * omegaDisplay);
+XcvEl.textContent = xCritDisplay.toFixed(3);
   // ===== ΤΑΛΑΝΤΩΣΗ =====
   if (phase === 1) {
     v += -omega12 * omega12 * x * dt;
@@ -136,9 +139,6 @@ function readUI() {
   const A = Math.sqrt(2 * E / k);
   AvEl.textContent  = A.toFixed(3);
 
-  const omega12 = Math.sqrt(k / (m1 + m2));
-  const xCrit = mu * g / (omega12 * omega12);
-  XcvEl.textContent = xCrit.toFixed(3);
 }
 
 function startMotion() {
