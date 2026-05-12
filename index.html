@@ -4,13 +4,11 @@
   <meta charset="utf-8">
   <title>Ταλάντωση με τριβή και απώλεια επαφής</title>
 
- 
-<!-- p5.js -->
-<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-<!-- sketch -->
-<script src="sketch.js"></script>
-
+  <!-- sketch -->
+  <script src="sketch.js" defer></script>
 
   <style>
     body {
@@ -22,8 +20,8 @@
       margin: 0 auto;
     }
     #controls {
-      margin: 15px auto;
       width: 900px;
+      margin: 15px auto;
     }
     .sliderBlock {
       margin: 8px 0;
@@ -47,10 +45,8 @@
 
 <body>
 
-  <!-- Canvas -->
   <div id="canvas-holder"></div>
 
-  <!-- Controls -->
   <div id="controls">
 
     <div class="sliderBlock">
@@ -85,7 +81,6 @@
       <span id="Ev">0</span>
     </div>
 
-    <!-- Κουμπιά -->
     <button id="startBtn">START</button>
     <button id="stopBtn">STOP</button>
     <button id="resetBtn">RESET</button>
