@@ -121,6 +121,13 @@ XcvEl.textContent = xCritDisplay.toFixed(3);
     textSize(22);
     text("Χάσιμο επαφής", width/2 - 90, 35);
   }
+  
+if (phase === 4) {
+  fill(0, 120, 0);
+  textSize(20);
+  text("Το Σ₂ προσέκρουσε στο ελατήριο", width/2 - 170, 40);
+}
+
 }
 
 function readUI() {
