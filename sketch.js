@@ -8,14 +8,15 @@ const dt = 0.016;
 // 1.5: παύση (χάσιμο επαφής)
 // 2: ολίσθηση Σ2, Σ1 συνεχίζει
 // 3: πτώση Σ2
-// 4: τελικό στοπ
+// 4: τελική παύση (πρόσκρουση στο ελατήριο)
 let phase = 0;
 
 // ================= ΚΙΝΗΣΗ =================
-let x = 0, v = 0;
-let x2 = 0, v2 = 0;
-let y2 = 0, vy2 = 0;
-let slideDir = 1, slideTime = 0;
+let x = 0, v = 0;          // Σ1
+let x2 = 0, v2 = 0;        // Σ2 οριζόντια
+let y2 = 0, vy2 = 0;       // Σ2 κατακόρυφα
+let slideDir = 1;
+let slideTime = 0;
 
 // ================= ΠΑΡΑΜΕΤΡΟΙ =================
 let m1, m2, k, mu, E;
@@ -47,7 +48,6 @@ function setup() {
   kvEl  = document.getElementById("kv");
   muvEl = document.getElementById("muv");
   EvEl  = document.getElementById("Ev");
-
   AvEl  = document.getElementById("Av");
   XcvEl = document.getElementById("Xcv");
 
@@ -63,14 +63,14 @@ function draw() {
   background(245);
   readUI();
 
+  // Ανεξάρτητος υπολογισμός x_crit (ΔΕΝ εξαρτάται από Ε)
   const omega12 = Math.sqrt(k / (m1 + m2));
-  const omega1  = Math.sqrt(k / m1);
   const xCrit   = mu * g / (omega12 * omega12);
-// Υπολογισμός οριακής απομάκρυνσης (πάντα σωστός)
-const omegaDisplay = Math.sqrt(k / (m1 + m2));
-const xCritDisplay = mu * g / (omegaDisplay * omegaDisplay);
-XcvEl.textContent = xCritDisplay.toFixed(3);
-  // ===== ΤΑΛΑΝΤΩΣΗ =====
+  XcvEl.textContent = xCrit.toFixed(3);
+
+  const omega1 = Math.sqrt(k / m1);
+
+  // ===== ΤΑΛΑΝΤΩΣΗ Σ1+Σ2 =====
   if (phase === 1) {
     v += -omega12 * omega12 * x * dt;
     x += v * dt;
@@ -81,13 +81,13 @@ XcvEl.textContent = xCritDisplay.toFixed(3);
     }
   }
 
-  // ===== Σ1 συνεχίζει =====
+  // ===== Σ1 συνεχίζει ΑΑΤ =====
   if (phase === 2 || phase === 3) {
     v += -omega1 * omega1 * x * dt;
     x += v * dt;
   }
 
-  // ===== ΟΛΙΣΘΗΣΗ =====
+  // ===== ΟΛΙΣΘΗΣΗ Σ2 =====
   if (phase === 2) {
     slideTime += dt;
     v2 += mu * g * slideDir * dt;
@@ -99,7 +99,7 @@ XcvEl.textContent = xCritDisplay.toFixed(3);
     }
   }
 
-  // ===== ΠΤΩΣΗ =====
+  // ===== ΠΤΩΣΗ Σ2 =====
   if (phase === 3) {
     vy2 += g * dt;
     y2  += vy2 * dt;
@@ -110,6 +110,7 @@ XcvEl.textContent = xCritDisplay.toFixed(3);
       vy2 = 0;
       v   = 0;
       phase = 4;
+      lockEverythingExceptReset();
     }
   }
 
@@ -121,33 +122,15 @@ XcvEl.textContent = xCritDisplay.toFixed(3);
     textSize(22);
     text("Χάσιμο επαφής", width/2 - 90, 35);
   }
-  
-if (phase === 4) {
-  fill(0, 120, 0);
-  textSize(20);
-  text("Το Σ₂ προσέκρουσε στο ελατήριο", width/2 - 170, 40);
+
+  if (phase === 4) {
+    fill(0, 120, 0);
+    textSize(20);
+    text("Το Σ₂ προσέκρουσε στο ελατήριο", width/2 - 185, 60);
+  }
 }
 
-}
-
-function readUI() {
-  m1 = +m1El.value;
-  m2 = +m2El.value;
-  k  = +kEl.value;
-  mu = +muEl.value;
-  E  = +EEl.value;
-
-  m1vEl.textContent = m1;
-  m2vEl.textContent = m2;
-  kvEl.textContent  = k;
-  muvEl.textContent = mu.toFixed(2);
-  EvEl.textContent  = E.toFixed(1);
-
-  const A = Math.sqrt(2 * E / k);
-  AvEl.textContent  = A.toFixed(3);
-
-}
-
+// ================= ΚΟΥΜΠΙΑ =================
 function startMotion() {
   if (phase !== 0) return;
 
@@ -179,13 +162,53 @@ function resetSystem() {
   x = v = x2 = v2 = vy2 = slideTime = 0;
   y2 = Y - H1 - H2;
   phase = 0;
+
   EEl.value = 0;
   EvEl.textContent = "0.0";
-  lockSliders(false);
+
+  startBtn.disabled  = false;
+  resumeBtn.disabled = false;
+  stopBtn.disabled   = false;
+
+  m1El.disabled = false;
+  m2El.disabled = false;
+  kEl.disabled  = false;
+  muEl.disabled = false;
+  EEl.disabled  = false;
+
+  resetBtn.disabled = false;
 }
 
-function lockSliders(lock) {
-  [m1El, m2El, kEl, muEl, EEl].forEach(el => el.disabled = lock);
+function lockEverythingExceptReset() {
+  startBtn.disabled  = true;
+  resumeBtn.disabled = true;
+  stopBtn.disabled   = true;
+
+  m1El.disabled = true;
+  m2El.disabled = true;
+  kEl.disabled  = true;
+  muEl.disabled = true;
+  EEl.disabled  = true;
+
+  resetBtn.disabled = false;
+}
+
+// ================= UI =================
+function readUI() {
+  m1 = +m1El.value;
+  m2 = +m2El.value;
+  k  = +kEl.value;
+  mu = +muEl.value;
+  E  = +EEl.value;
+
+  m1vEl.textContent = m1;
+  m2vEl.textContent = m2;
+  kvEl.textContent  = k;
+  muvEl.textContent = mu.toFixed(2);
+  EvEl.textContent  = E.toFixed(1);
+
+  const A = Math.sqrt(2 * E / k);
+  AvEl.textContent = A.toFixed(3);
 }
 
 // ================= ΣΧΕΔΙΑΣΗ =================
@@ -209,20 +232,23 @@ function drawSystem() {
   fill(120);
   rect(X2 - W2/2, y2, W2, H2);
 
-  stroke(0); noFill(); beginShape();
+  stroke(0);
+  noFill();
+  beginShape();
   let a = X1 + W1/2, b = 770, y = Y - H1/2;
   vertex(a, y);
-  for (let i=1;i<=16;i++){
-    let t=i/16;
-    vertex(lerp(a,b,t), y+(i%2?10:-10));
+  for (let i = 1; i <= 16; i++) {
+    let t = i / 16;
+    vertex(lerp(a, b, t), y + (i % 2 ? 10 : -10));
   }
-  vertex(b,y); endShape();
+  vertex(b, y);
+  endShape();
 }
 
 function drawCriticalLines(xCrit) {
   stroke(0,120);
   drawingContext.setLineDash([6,6]);
-  line(X0 + xCrit*scale, Y-90, X0 + xCrit*scale, Y+30);
-  line(X0 - xCrit*scale, Y-90, X0 - xCrit*scale, Y+30);
+  line(X0 + xCrit * scale, Y - 90, X0 + xCrit * scale, Y + 30);
+  line(X0 - xCrit * scale, Y - 90, X0 - xCrit * scale, Y + 30);
   drawingContext.setLineDash([]);
 }
