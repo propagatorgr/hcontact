@@ -1,86 +1,154 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-  <meta charset="utf-8">
-  <title>Ταλάντωση με τριβή και απώλεια επαφής</title>
+// ========= ΣΤΑΘΕΡΕΣ =========
+const g = 9.81;
+const dt = 0.016;
 
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-  <script src="sketch.js" defer></script>
+// ========= ΚΑΤΑΣΤΑΣΗ =========
+let x = 0;
+let v = 0;
+let running = false;
+let paused = false;
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 20px;
+// ========= ΦΥΣΙΚΕΣ ΠΑΡΑΜΕΤΡΟΙ =========
+let m1, m2, k, mu, E;
+
+// ========= ΣΧΕΔΙΑΣΗ =========
+const scale = 300;
+const X0 = 260;
+const Y  = 180;
+const W1 = 60, H1 = 24;
+const W2 = 40, H2 = 18;
+
+function setup() {
+  const c = createCanvas(900, 300);
+  c.parent("canvas-holder");
+
+  document.getElementById("startBtn").onclick = startMotion;
+  document.getElementById("resetBtn").onclick = resetSystem;
+}
+
+function draw() {
+  background(245);
+
+  readUI();
+
+  const omega = Math.sqrt(k / (m1 + m2));
+  const xCrit = mu * g / (omega * omega);
+  const A = Math.sqrt(2 * E / k);
+
+  if (running && !paused) {
+    let a = -omega * omega * x;
+    v += a * dt;
+    x += v * dt;
+
+    // απώλεια επαφής
+    if (Math.abs(x) >= xCrit) {
+      paused = true;
+      running = false;
     }
-    #canvas-holder {
-      margin: 0 auto;
-    }
-    #controls {
-      margin: 15px auto;
-      width: 900px;
-    }
-    .sliderBlock {
-      margin: 8px 0;
-    }
-    label {
-      display: inline-block;
-      width: 140px;
-      text-align: right;
-      margin-right: 10px;
-    }
-    input[type=range] {
-      width: 300px;
-    }
-    button {
-      margin: 10px;
-      padding: 6px 14px;
-      font-size: 14px;
-    }
-  </style>
-</head>
+  }
 
-<body>
+  drawCriticalLines(xCrit);
+  drawSystem();
+  
+  if (paused) {
+    fill(200, 0, 0);
+    textSize(22);
+    text("Χάσιμο επαφής", width/2 - 90, 35);
+  }
+}
 
-  <div id="canvas-holder"></div>
+// ========= ΣΧΕΔΙΑΣΗ =========
+function drawSystem() {
+  const X = X0 + x * scale;
 
-  <div id="controls">
-    <div class="sliderBlock">
-      <label>m₁ (kg)</label>
-      <input type="range" id="m1" min="1" max="8" step="0.5" value="4">
-      <span id="m1v">4</span>
-    </div>
+  stroke(0);
+  line(0, Y, width, Y);
 
-    <div class="sliderBlock">
-      <label>m₂ (kg)</label>
-      <input type="range" id="m2" min="1" max="8" step="0.5" value="2">
-      <span id="m2v">2</span>
-    </div>
+  fill(180);
+  rect(770, Y - 70, 25, 70);
 
-    <div class="sliderBlock">
-      <label>k (N/m)</label>
-      <input type="range" id="k" min="100" max="500" step="10" value="200">
-      <span id="kv">200</span>
-    </div>
+  fill(200,120,120);
+  rect(X - W1/2, Y - H1, W1, H1);
 
-    <div class="sliderBlock">
-      <label>μ</label>
-      <input type="range" id="mu" min="0.1" max="1" step="0.05" value="0.5">
-      <span id="muv">0.50</span>
-    </div>
+  fill(0);
+  noStroke();
+  ellipse(X, Y - H1/2, 7, 7);
 
-    <hr>
+  fill(120);
+  rect(X - W2/2, Y - H1 - H2, W2, H2);
 
-    <div class="sliderBlock">
-      <label>Ενέργεια Ε (J)</label>
-      <input type="range" id="E" min="0" max="20" step="0.2" value="0">
-      <span id="Ev">0</span>
-    </div>
-    <div>
-    <button id="startBtn">START</button>
-    <button id="resetBtn">RESET</button>
-  </div>
+  // ελατήριο
+  let xL = X + W1/2;
+  let xR = 770;
+  let yS = Y - H1/2;
 
-</body>
-</html>
+  noFill();
+  stroke(0);
+  beginShape();
+  vertex(xL, yS);
+  for (let i = 1; i <= 16; i++) {
+    let t = i / 16;
+    let px = lerp(xL, xR, t);
+    let py = yS + (i % 2 ? 10 : -10);
+    vertex(px, py);
+  }
+  vertex(xR, yS);
+  endShape();
 
+  stroke(0,150);
+  line(X0, Y+5, X0, Y+30);
+  noStroke();
+  fill(0);
+  text("O", X0-5, Y+45);
+}
+
+function drawCriticalLines(xCrit) {
+  stroke(0,120);
+  drawingContext.setLineDash([6,6]);
+  let xp = X0 + xCrit * scale;
+  let xm = X0 - xCrit * scale;
+  line(xp, Y-90, xp, Y+30);
+  line(xm, Y-90, xm, Y+30);
+  drawingContext.setLineDash([]);
+}
+
+// ========= UI =========
+function readUI() {
+  m1 = +m1Slider.value;
+  m2 = +m2Slider.value;
+  k  = +kSlider.value;
+  mu = +muSlider.value;
+  E  = +ESlider.value;
+
+  m1v.textContent = m1;
+  m2v.textContent = m2;
+  kv.textContent  = k;
+  muv.textContent = mu.toFixed(2);
+  Ev.textContent  = E.toFixed(1);
+}
+
+function startMotion() {
+  if (!running && !paused) {
+    const A = Math.sqrt(2 * E / k);
+    x = 0;
+    v = Math.sqrt(2 * E / (m1 + m2)); // v_max στο O
+    running = true;
+    lockSystemSliders(true);
+  }
+}
+
+function resetSystem() {
+  x = 0;
+  v = 0;
+  running = false;
+  paused = false;
+  ESlider.value = 0;
+  lockSystemSliders(false);
+}
+
+function lockSystemSliders(lock) {
+  m1.disabled = lock;
+  m2.disabled = lock;
+  k.disabled  = lock;
+  mu.disabled = lock;
+}
