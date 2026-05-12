@@ -2,11 +2,9 @@
 <html lang="el">
 <head>
   <meta charset="utf-8">
-  <title>Ταλάντωση με τριβή και απώλεια επαφής</title>
+  <title>Ταλάντωση – Απώλεια επαφής – Ολίσθηση – Πτώση</title>
 
-  <!-- p5.js -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-  <!-- sketch -->
   <script src="sketch.js" defer></script>
 
   <style>
@@ -27,7 +25,7 @@
     }
     label {
       display: inline-block;
-      width: 140px;
+      width: 160px;
       text-align: right;
       margin-right: 10px;
     }
@@ -38,6 +36,11 @@
       margin: 10px;
       padding: 6px 16px;
       font-size: 14px;
+    }
+    .formula {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      margin: 4px 0;
     }
   </style>
 </head>
@@ -77,10 +80,18 @@
     <div class="sliderBlock">
       <label>Ενέργεια E (J)</label>
       <input type="range" id="ESlider" min="0" max="20" step="0.2" value="0">
-      <span id="Ev">0</span>
+      <span id="Ev">0.0</span>
     </div>
 
-    <!-- ΚΟΥΜΠΙΑ -->
+    <!-- ΤΥΠΟΙ ΚΑΙ ΤΙΜΕΣ -->
+    <div class="formula">A = √(2E / k)</div>
+    <div class="formula">A = <span id="Av">0.000</span> m</div>
+
+    <div class="formula">x<sub>crit</sub> = μg / ω²</div>
+    <div class="formula">x<sub>crit</sub> = <span id="Xcv">0.000</span> m</div>
+
+    <hr>
+
     <button id="startBtn">START</button>
     <button id="resumeBtn">RESUME</button>
     <button id="stopBtn">STOP</button>
