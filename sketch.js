@@ -76,7 +76,7 @@
       <input type="range" id="E" min="0" max="20" step="0.2" value="0">
       <span id="Ev">0</span>
     </div>
-
+    <div>
     <button id="startBtn">START</button>
     <button id="resetBtn">RESET</button>
   </div>
