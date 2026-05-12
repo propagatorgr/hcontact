@@ -59,7 +59,9 @@ function draw() {
   const omega12 = Math.sqrt(k / (m1 + m2));
   const omega1  = Math.sqrt(k / m1);
   const xCrit   = mu * g / (omega12 * omega12);
-
+if (phase === 0) {
+  y2 = Y - H1 - H2;
+}
   if (phase === 1) {
     const a = -omega12 * omega12 * x;
     v += a * dt;
