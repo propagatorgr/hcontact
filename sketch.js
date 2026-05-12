@@ -257,8 +257,8 @@ function lockForPauseResumeOnly() {
   // Κουμπιά
   startBtn.disabled  = true;
   stopBtn.disabled   = true;
+  resetBtn.disabled  = true;
   resumeBtn.disabled = false;
-  resetBtn.disabled  = false;
 
   // Sliders
   m1El.disabled = true;
