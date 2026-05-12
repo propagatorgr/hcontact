@@ -2,35 +2,38 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <title>Σώματα με  οριζόντιο Ελατήριο – Χάσιμο επαφής</title>
+  <title>Ταλάντωση με Τριβή</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-  <script src="sketch.js"></script>
   <style>
-    body { display: flex; gap: 20px; font-family: sans-serif; }
-    #controls { width: 300px; }
-    label { display: block; margin-top: 10px; }
-    button { margin-top: 15px; }
+    body { font-family: Arial; text-align: center; }
+    #controls { margin-top: 10px; }
+    label { display: block; margin-top: 8px; }
   </style>
 </head>
+
 <body>
 
+<div id="sketch-holder"></div>
+
 <div id="controls">
-  <label>m₁: <span id="m1val"></span></label>
+  <label>m₁: <span id="m1v"></span></label>
   <input type="range" id="m1" min="1" max="8" value="4">
 
-  <label>m₂: <span id="m2val"></span></label>
+  <label>m₂: <span id="m2v"></span></label>
   <input type="range" id="m2" min="1" max="8" value="2">
 
-  <label>k: <span id="kval"></span></label>
+  <label>k: <span id="kv"></span></label>
   <input type="range" id="k" min="100" max="500" step="10" value="200">
 
   <p>
-    \(\omega = \sqrt{k/(m_1+m_2)}\)<br>
-    \(x_{crit} = \mu g / \omega^2\)
+    ω = √(k / (m₁ + m₂))<br>
+    x<sub>crit</sub> = μ g / ω², μ = 0.5
   </p>
 
   <button id="resume" disabled>RESUME</button>
 </div>
 
+<script src="sketch.js"></script>
 </body>
 </html>
+
