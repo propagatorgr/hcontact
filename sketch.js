@@ -100,10 +100,29 @@ function draw() {
 
   // ===== ΠΤΩΣΗ Σ2 =====
   if (phase === 3) {
-    vy2 += g * dt;
-    y2  += vy2 * dt;
-  }
+  vy2 += g * dt;
+  y2  += vy2 * dt;
 
+  // ----- σύγκρουση με το ελατήριο -----
+  const ySpring = Y - H1 / 2;
+
+  if (y2 + H2 >= ySpring) {
+    // ευθυγράμμιση ακριβώς στο ελατήριο
+    y2 = ySpring - H2;
+
+    // μηδενισμός ταχυτήτων
+    vy2 = 0;
+    v   = 0;
+
+    // τελική παύση
+    phase = 4;   // τελικό στάδιο (όλα σταματούν)
+  }
+}
+if (phase === 4) {
+  fill(0, 120, 0);
+  textSize(20);
+  text("Το Σ₂ προσέκρουσε στο ελατήριο", width/2 - 150, 60);
+}
   drawCriticalLines(xCrit);
   drawSystem();
 
