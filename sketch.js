@@ -1,45 +1,34 @@
-let m1Slider, m2Slider, kSlider;
-let resumeBtn;
+let x = 0, v = 0;
+let dragging = false, paused = false, falling = false;
+let y2 = 0, v2 = 0;
 
-let x = 0;
-let v = 0;
-let dragging = false;
-let paused = false;
-let falling = false;
-
-const mu = 0.5;
-const g = 9.81;
-
-let y2 = 0;
-let v2 = 0;
+const mu = 0.5, g = 9.81;
 
 function setup() {
-  let c = createCanvas(700, 300);
-  c.parent(document.body);
+  let c = createCanvas(800, 300);
+  c.parent("sketch-holder");
 
-  m1Slider = select('#m1');
-  m2Slider = select('#m2');
-  kSlider = select('#k');
-  resumeBtn = select('#resume');
-
-  resumeBtn.mousePressed(resumeMotion);
+  select("#resume").mousePressed(() => {
+    falling = true;
+    paused = false;
+    select("#resume").attribute("disabled", true);
+  });
 }
 
 function draw() {
-  background(240);
+  background(245);
 
-  let m1 = m1Slider.value();
-  let m2 = m2Slider.value();
-  let k = kSlider.value();
+  let m1 = +select("#m1").value();
+  let m2 = +select("#m2").value();
+  let k  = +select("#k").value();
 
-  select('#m1val').html(m1);
-  select('#m2val').html(m2);
-  select('#kval').html(k);
+  select("#m1v").html(m1);
+  select("#m2v").html(m2);
+  select("#kv").html(k);
 
   let omega = sqrt(k / (m1 + m2));
   let xcrit = mu * g / (omega * omega);
 
-  // --- Κίνηση ---
   if (!dragging && !paused) {
     let a = -omega * omega * x;
     v += a * 0.016;
@@ -47,60 +36,63 @@ function draw() {
 
     if (abs(x) >= xcrit) {
       paused = true;
-      resumeBtn.attribute('disabled', false);
+      select("#resume").removeAttribute("disabled");
     }
   }
 
-  // --- Πτώση Σ2 ---
   if (falling) {
     v2 += g * 0.016;
-    y2 += v2 * 0.016 * 50;
+    y2 += v2;
   }
 
   drawSystem(x, y2);
 
   if (paused) {
-    fill('red');
+    fill("red");
     textSize(22);
-    textAlign(CENTER);
-    text("Χάσιμο επαφής", width / 2, 40);
+    text("Χάσιμο επαφής", width/2 - 80, 40);
   }
 }
 
-function drawSystem(x, yDrop) {
-  let baseX = width / 2 + x * 80;
-  let baseY = 180;
+function drawSystem(x, yFall) {
+  let X = width/2 + x * 80;
+  let Y = 180;
+
+  // Τοίχος
+  fill(180);
+  rect(700, 120, 30, 80);
+
+  // Ελατήριο (οριζόντιο)
+  stroke(0);
+  noFill();
+  beginShape();
+  for (let i = 0; i < 10; i++) {
+    let px = lerp(X + 60, 700, i/9);
+    let py = Y - 20 + (i % 2 === 0 ? -10 : 10);
+    vertex(px, py);
+  }
+  endShape();
 
   // Σ1
   fill(200, 120, 120);
-  rect(baseX - 60, baseY - 40, 120, 40);
+  rect(X - 60, Y - 40, 120, 40);
 
   // Σ2
   fill(120);
-  rect(baseX - 40, baseY - 80 + yDrop, 80, 40);
-
-  // ελατήριο
-  stroke(0);
-  line(baseX + 60, baseY - 20, width - 50, baseY - 20);
+  rect(X - 40, Y - 80 + yFall, 80, 40);
 }
 
 function mousePressed() {
-  if (mouseY > 100 && !paused) dragging = true;
+  if (mouseY < height && !paused) dragging = true;
 }
 
 function mouseDragged() {
   if (dragging) {
-    x = (mouseX - width / 2) / 80;
+    x = (mouseX - width/2) / 80;
     v = 0;
   }
 }
 
 function mouseReleased() {
   dragging = false;
-}
-
-function resumeMotion() {
-  falling = true;
-  paused = false;
-  resumeBtn.attribute('disabled', true);
 }
