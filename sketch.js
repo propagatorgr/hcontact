@@ -8,10 +8,11 @@ let paused = false;
 
 // ================= ΚΙΝΗΣΗ =================
 let x = 0, v = 0;
-let x2 = 0, v2 = 0;
+let x2 = 0;
 let y2 = 0, vy2 = 0;
-let vx2 = 0; // ⭐ οριζόντια ταχύτητα Σ2 μετά αποκόλληση
+let vx2 = 0;
 let hitSpring = false;
+
 // ================= ΠΑΡΑΜΕΤΡΟΙ =================
 let m1, m2, k, mu, E;
 
@@ -58,75 +59,77 @@ function draw() {
   background(245);
   readUI();
 
-  // ✅ STOP mode: μόνο ενημέρωση ενέργειας → ταχύτητας
+  if (phase === 4) {
+    drawCriticalLines(getXcrit());
+    drawSystem();
+    if (hitSpring) {
+      fill(0,120,0);
+      textSize(20);
+      text("Το Σ₂ προσέκρουσε στο ελατήριο", width/2 - 180, 60);
+    }
+    return;
+  }
+
   if (paused) {
     adjustVelocityToEnergy();
+    drawCriticalLines(getXcrit());
     drawSystem();
     return;
   }
 
   const omega12 = Math.sqrt(k / (m1 + m2));
-  const xCrit = mu * g / (omega12 * omega12);
-  XcvEl.textContent = xCrit.toFixed(3);
+  const omega1  = Math.sqrt(k / m1);
+  const xCrit   = getXcrit();
 
-  const omega1 = Math.sqrt(k / m1);
-
-  // ===== Σ1+Σ2 μαζί =====
+  // ===== ΤΑΛΑΝΤΩΣΗ ΜΑΖΙ =====
   if (phase === 1) {
     v += -omega12 * omega12 * x * dt;
     x += v * dt;
 
     if (Math.abs(x) >= xCrit) {
-      phase = 3; // πάμε κατευθείαν σε αποκόλληση
 
-      // ✅ αρχικές συνθήκες βολής
-      vx2 = v;         // ίδια οριζόντια ταχύτητα
+      // 👉 εδώ αρχίζει η σωστή μεταφορά κίνησης
+      vx2 = v;        // συνεχής ταχύτητα
       vy2 = 0;
+
       x2 = 0;
       y2 = Y - H1 - H2;
 
+      phase = 2;
       lockForPauseResumeOnly();
     }
   }
 
   // ===== Σ1 μόνο του =====
-  if (phase === 3 ) {
+  if (phase === 2 || phase === 3) {
     v += -omega1 * omega1 * x * dt;
     x += v * dt;
   }
 
-  // ===== Σ2 → ΟΡΙΖΟΝΤΙΑ ΒΟΛΗ =====
-  if (phase === 3) {
+  // ===== ΟΡΙΖΟΝΤΙΑ ΒΟΛΗ Σ2 =====
+  if (phase === 2) {
     vy2 += g * dt;
-    y2 += vy2 * dt;
-    x2 += vx2 * dt;
-  
+    y2  += vy2 * dt;
+    x2  += vx2 * dt;
+
     const ySpring = Y - H1 / 2;
-    // ✅ μόνο αν είναι πάνω από το ελατήριο
     const Xspring = 770;
-const X2abs = X0 + x * scale + x2 * scale;
+    const X2abs = X0 + x * scale + x2 * scale;
 
-// ---- ΠΤΩΣΗ ΠΑΝΩ ΣΤΟ ΕΛΑΤΗΡΙΟ ----
-if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
-  y2 = ySpring - H2;
-  vy2 = 0;
-  v = 0;
-  phase = 4;
+    // --- πάνω στο ελατήριο ---
+    if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
+      y2 = ySpring - H2;
+      vy2 = 0;
+      v = 0;
 
-  hitSpring = true;   // ✅ νέο flag
-  lockEverythingExceptReset();
-}
+      hitSpring = true;
+      phase = 4;
+      lockEverythingExceptReset();
+    }
 
-// ---- ΠΤΩΣΗ ΕΚΤΟΣ ΕΛΑΤΗΡΙΟΥ ----
-if (y2 > height) {
-  phase = 4;
-
-  hitSpring = false;  // ✅ νέο flag
-  lockEverythingExceptReset();
-}
-
-    // ✅ αλλιώς πέφτει απλά κάτω (χωρίς μήνυμα)
+    // --- αλλού ---
     if (y2 > height) {
+      hitSpring = false;
       phase = 4;
       lockEverythingExceptReset();
     }
@@ -134,15 +137,16 @@ if (y2 > height) {
 
   drawCriticalLines(xCrit);
   drawSystem();
-
-  if (phase === 4 && hitSpring) {
-    fill(0, 120, 0);
-    textSize(20);
-    text("Το Σ₂ προσέκρουσε στο ελατήριο", width/2 - 180, 60);
-  }
 }
 
-// ================= ΕΝΕΡΓΕΙΑ ΣΕ STOP =================
+// ================= ΒΟΗΘΗΤΙΚΑ =================
+function getXcrit() {
+  const omega12 = Math.sqrt(k / (m1 + m2));
+  const xCrit = mu * g / (omega12 * omega12);
+  XcvEl.textContent = xCrit.toFixed(3);
+  return xCrit;
+}
+
 function adjustVelocityToEnergy() {
   const totalMass = m1 + m2;
   const potential = 0.5 * k * x * x;
@@ -169,33 +173,32 @@ function startMotion() {
 
 function stopMotion() {
   paused = true;
-
-  // ✅ μόνο το E slider ενεργό
   EEl.disabled = false;
 }
 
 function resumeMotion() {
-  paused = false;
 
-  // επανακλείδωμα sliders
-  lockSliders(true);
+  // Από STOP
+  if (paused) {
+    paused = false;
+    lockSliders(true);
+    return;
+  }
+
+  // Από απώλεια επαφής
+  if (phase === 2) {
+    lockSliders(true);
+  }
 }
 
 function resetSystem() {
-  x = v = x2 = v2 = vy2 = 0;
+  x = v = x2 = vy2 = 0;
   y2 = Y - H1 - H2;
+
   phase = 0;
   paused = false;
 
-  startBtn.disabled  = false;
-  resumeBtn.disabled = false;
-  stopBtn.disabled   = false;
-
-  m1El.disabled = false;
-  m2El.disabled = false;
-  kEl.disabled  = false;
-  muEl.disabled = false;
-  EEl.disabled  = false;
+  lockSliders(false);
 }
 
 // ================= LOCK =================
@@ -211,9 +214,7 @@ function lockEverythingExceptReset() {
   startBtn.disabled  = true;
   resumeBtn.disabled = true;
   stopBtn.disabled   = true;
-
   lockSliders(true);
-
   resetBtn.disabled = false;
 }
 
@@ -224,6 +225,7 @@ function lockForPauseResumeOnly() {
   resumeBtn.disabled = false;
 }
 
+// ================= UI =================
 function readUI() {
   m1 = +m1El.value;
   m2 = +m2El.value;
@@ -240,57 +242,43 @@ function readUI() {
   const A = Math.sqrt(2 * E / k);
   AvEl.textContent = A.toFixed(3);
 }
+
+// ================= ΣΧΕΔΙΑΣΗ =================
 function drawSystem() {
   const X1 = X0 + x * scale;
   const X2 = X1 + x2 * scale;
 
-  // έδαφος
   stroke(0);
   line(0, Y, width, Y);
 
-  // τοίχος
   fill(180);
   rect(770, Y - 70, 25, 70);
 
-  // Σ1
   fill(200,120,120);
   rect(X1 - W1/2, Y - H1, W1, H1);
 
-  // κέντρο Σ1
-  fill(0);
-  noStroke();
+  fill(0); noStroke();
   ellipse(X1, Y - H1/2, 7, 7);
 
-  // Σ2
   fill(120);
   rect(X2 - W2/2, y2, W2, H2);
 
-  // ελατήριο
-  stroke(0);
-  noFill();
+  stroke(0); noFill();
   beginShape();
-
-  let a = X1 + W1/2;
-  let b = 770;
-  let yy = Y - H1/2;
-
+  let a = X1 + W1/2, b = 770, yy = Y - H1/2;
   vertex(a, yy);
-
   for (let i = 1; i <= 16; i++) {
     let t = i / 16;
     vertex(lerp(a, b, t), yy + (i % 2 ? 10 : -10));
   }
-
   vertex(b, yy);
   endShape();
 }
+
 function drawCriticalLines(xCrit) {
   stroke(0,120);
   drawingContext.setLineDash([6,6]);
-
   line(X0 + xCrit * scale, Y - 90, X0 + xCrit * scale, Y + 30);
   line(X0 - xCrit * scale, Y - 90, X0 - xCrit * scale, Y + 30);
-
   drawingContext.setLineDash([]);
 }
-
