@@ -106,7 +106,21 @@ function draw() {
   }
 
   // ===== Σ2 ΒΟΛΗ =====
-  if (phase === 2) {
+if (phase === 2) {
+
+  // --- ΑΝ ΒΓΗΚΕ ΕΚΤΟΣ CANVAS → ΣΤΑΜΑΤΑ ---
+  const X2abs = X0 + x * scale + x2 * scale;
+
+  if (X2abs < -50 || X2abs > width + 50 || y2 > height + 50) {
+    phase = 4;
+    hitSpring = false;
+    lockEverythingExceptReset();
+  }
+
+  vy2 += g * dt;
+  y2  += vy2 * dt;
+  x2  += vx2 * dt;
+}
 
     vy2 += g * dt;
     y2  += vy2 * dt;
