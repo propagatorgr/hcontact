@@ -1,20 +1,17 @@
 // ================= ΣΤΑΘΕΡΕΣ =================
-const g  = 9.81;
+const g = 9.81;
 const dt = 0.016;
 
 // ================= ΦΑΣΕΙΣ =================
-// 0: idle
-// 1: ταλάντωση (Σ1+Σ2)
-// 1.5: παύση (χάσιμο επαφής)
-// 2: ολίσθηση Σ2, Σ1 συνεχίζει
-// 3: πτώση Σ2
-// 4: τελική παύση (πρόσκρουση στο ελατήριο)
 let phase = 0;
 
+// ================= PAUSE =================
+let paused = false;
+
 // ================= ΚΙΝΗΣΗ =================
-let x = 0, v = 0;          // Σ1
-let x2 = 0, v2 = 0;        // Σ2 οριζόντια
-let y2 = 0, vy2 = 0;       // Σ2 κατακόρυφα
+let x = 0, v = 0;
+let x2 = 0, v2 = 0;
+let y2 = 0, vy2 = 0;
 let slideDir = 1;
 let slideTime = 0;
 
@@ -48,6 +45,7 @@ function setup() {
   kvEl  = document.getElementById("kv");
   muvEl = document.getElementById("muv");
   EvEl  = document.getElementById("Ev");
+
   AvEl  = document.getElementById("Av");
   XcvEl = document.getElementById("Xcv");
 
@@ -63,14 +61,18 @@ function draw() {
   background(245);
   readUI();
 
-  // Ανεξάρτητος υπολογισμός x_crit (ΔΕΝ εξαρτάται από Ε)
+  if (paused) {
+    drawSystem();
+    return;
+  }
+
   const omega12 = Math.sqrt(k / (m1 + m2));
-  const xCrit   = mu * g / (omega12 * omega12);
+  const xCrit = mu * g / (omega12 * omega12);
   XcvEl.textContent = xCrit.toFixed(3);
 
   const omega1 = Math.sqrt(k / m1);
 
-  // ===== ΤΑΛΑΝΤΩΣΗ Σ1+Σ2 =====
+  // ===== ΤΑΛΑΝΤΩΣΗ =====
   if (phase === 1) {
     v += -omega12 * omega12 * x * dt;
     x += v * dt;
@@ -82,13 +84,11 @@ function draw() {
     }
   }
 
-  // ===== Σ1 συνεχίζει ΑΑΤ =====
   if (phase === 2 || phase === 3) {
     v += -omega1 * omega1 * x * dt;
     x += v * dt;
   }
 
-  // ===== ΟΛΙΣΘΗΣΗ Σ2 =====
   if (phase === 2) {
     slideTime += dt;
     v2 += mu * g * slideDir * dt;
@@ -100,16 +100,15 @@ function draw() {
     }
   }
 
-  // ===== ΠΤΩΣΗ Σ2 =====
   if (phase === 3) {
     vy2 += g * dt;
-    y2  += vy2 * dt;
+    y2 += vy2 * dt;
 
     const ySpring = Y - H1 / 2;
     if (y2 + H2 >= ySpring) {
       y2 = ySpring - H2;
       vy2 = 0;
-      v   = 0;
+      v = 0;
       phase = 4;
       lockEverythingExceptReset();
     }
@@ -136,33 +135,49 @@ function startMotion() {
   if (phase !== 0) return;
 
   x = 0;
-  v = Math.sqrt(2 * E / (m1 + m2));
-  x2 = 0; v2 = 0;
-  y2 = Y - H1 - H2; vy2 = 0;
+
+  // κρατά κατεύθυνση αν υπάρχει, αλλιώς ξεκινά δεξιά
+  const dir = Math.sign(v || 1);
+
+  v = dir * Math.sqrt(2 * E / (m1 + m2));
+
+  x2 = v2 = 0;
+  y2 = Y - H1 - H2;
+  vy2 = 0;
   slideTime = 0;
 
   phase = 1;
+  paused = false;
+
   lockSliders(true);
 }
 
-function resumeMotion() {
-  if (phase !== 1.5) return;
-
-  x2 = 0; v2 = 0;
-  y2 = Y - H1 - H2; vy2 = 0;
-  slideTime = 0;
-  phase = 2;
+function stopMotion() {
+  paused = true;
 }
 
-function stopMotion() {
-  phase = 0;
-  lockSliders(false);
+function resumeMotion() {
+  // από pause χρήστη
+  if (paused) {
+    paused = false;
+    return;
+  }
+
+  // από φυσική παύση
+  if (phase === 1.5) {
+    x2 = v2 = 0;
+    y2 = Y - H1 - H2;
+    vy2 = 0;
+    slideTime = 0;
+    phase = 2;
+  }
 }
 
 function resetSystem() {
   x = v = x2 = v2 = vy2 = slideTime = 0;
   y2 = Y - H1 - H2;
   phase = 0;
+  paused = false;
 
   EEl.value = 0;
   EvEl.textContent = "0.0";
@@ -180,18 +195,32 @@ function resetSystem() {
   resetBtn.disabled = false;
 }
 
+// ================= LOCKS =================
+function lockSliders(lock) {
+  m1El.disabled = lock;
+  m2El.disabled = lock;
+  kEl.disabled  = lock;
+  muEl.disabled = lock;
+  EEl.disabled  = lock;
+}
+
 function lockEverythingExceptReset() {
   startBtn.disabled  = true;
   resumeBtn.disabled = true;
   stopBtn.disabled   = true;
 
-  m1El.disabled = true;
-  m2El.disabled = true;
-  kEl.disabled  = true;
-  muEl.disabled = true;
-  EEl.disabled  = true;
+  lockSliders(true);
 
   resetBtn.disabled = false;
+}
+
+function lockForPauseResumeOnly() {
+  startBtn.disabled  = true;
+  stopBtn.disabled   = true;
+  resetBtn.disabled  = true;
+  resumeBtn.disabled = false;
+
+  lockSliders(true);
 }
 
 // ================= UI =================
@@ -236,7 +265,9 @@ function drawSystem() {
   stroke(0);
   noFill();
   beginShape();
+
   let a = X1 + W1/2, b = 770, y = Y - H1/2;
+
   vertex(a, y);
   for (let i = 1; i <= 16; i++) {
     let t = i / 16;
@@ -252,18 +283,4 @@ function drawCriticalLines(xCrit) {
   line(X0 + xCrit * scale, Y - 90, X0 + xCrit * scale, Y + 30);
   line(X0 - xCrit * scale, Y - 90, X0 - xCrit * scale, Y + 30);
   drawingContext.setLineDash([]);
-}
-function lockForPauseResumeOnly() {
-  // Κουμπιά
-  startBtn.disabled  = true;
-  stopBtn.disabled   = true;
-  resetBtn.disabled  = true;
-  resumeBtn.disabled = false;
-
-  // Sliders
-  m1El.disabled = true;
-  m2El.disabled = true;
-  kEl.disabled  = true;
-  muEl.disabled = true;
-  EEl.disabled  = true;
 }
