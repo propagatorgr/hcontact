@@ -189,6 +189,11 @@ function stopMotion() {   // ✅ ΥΠΑΡΧΕΙ ΤΩΡΑ
 function resumeMotion() {
   paused = false;
   lockSliders(true);
+  
+startBtn.disabled  = true;
+  stopBtn.disabled   = false;   // ⭐ ΤΟ ΚΡΙΣΙΜΟ
+  resumeBtn.disabled = true;
+
 }
 
 function resetSystem() {
