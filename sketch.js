@@ -122,7 +122,7 @@ function draw() {
     const Xspring = 770;
 
     // --- ΕΞΟΔΟΣ ΑΠΟ CANVAS ---
-    if (X2abs < -50 || X2abs > width + 50 || y2 > height + 50) {
+    if (X2abs<-50||X2abs>width+50||y2>height+50){
       phase = 4;
       hitSpring = false;
       lockEverythingExceptReset();
