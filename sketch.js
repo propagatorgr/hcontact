@@ -11,7 +11,7 @@ let x = 0, v = 0;
 let x2 = 0, v2 = 0;
 let y2 = 0, vy2 = 0;
 let vx2 = 0; // ⭐ οριζόντια ταχύτητα Σ2 μετά αποκόλληση
-
+let hitSpring = false;
 // ================= ΠΑΡΑΜΕΤΡΟΙ =================
 let m1, m2, k, mu, E;
 
@@ -135,7 +135,7 @@ if (y2 > height) {
   drawCriticalLines(xCrit);
   drawSystem();
 
-  if (phase === 4) {
+  if (phase === 4 && hitSpring) {
     fill(0, 120, 0);
     textSize(20);
     text("Το Σ₂ προσέκρουσε στο ελατήριο", width/2 - 180, 60);
