@@ -192,12 +192,45 @@ function resumeMotion() {
 }
 
 function resetSystem() {
-  x = v = x2 = vy2 = 0;
+
+  // ================= ΦΥΣΙΚΗ ΚΑΤΑΣΤΑΣΗ =================
+  x = 0;
+  v = 0;
+
+  x2 = 0;
+  vx2 = 0;
+  vy2 = 0;
+
   y2 = Y - H1 - H2;
 
   phase = 0;
   paused = false;
+  hitSpring = false;
 
+  // ================= ΑΡΧΙΚΕΣ ΤΙΜΕΣ SLIDERS =================
+  m1El.value = 4;
+  m2El.value = 2;
+  kEl.value  = 200;
+  muEl.value = 0.50;
+  EEl.value  = 0;
+
+  // ================= ΕΝΗΜΕΡΩΣΗ UI =================
+  m1vEl.textContent = "4";
+  m2vEl.textContent = "2";
+  kvEl.textContent  = "200";
+  muvEl.textContent = "0.50";
+  EvEl.textContent  = "0.0";
+
+  AvEl.textContent  = "0.000";
+  XcvEl.textContent = "0.000";
+
+  // ================= ΚΟΥΜΠΙΑ =================
+  startBtn.disabled  = false;
+  resumeBtn.disabled = true;
+  stopBtn.disabled   = true;
+  resetBtn.disabled  = false;
+
+  // ================= SLIDERS =================
   lockSliders(false);
 }
 
