@@ -230,3 +230,14 @@ function readUI() {
   const A = Math.sqrt(2 * E / k);
   AvEl.textContent = A.toFixed(3);
 }
+
+function drawCriticalLines(xCrit) {
+  stroke(0,120);
+  drawingContext.setLineDash([6,6]);
+
+  line(X0 + xCrit * scale, Y - 90, X0 + xCrit * scale, Y + 30);
+  line(X0 - xCrit * scale, Y - 90, X0 - xCrit * scale, Y + 30);
+
+  drawingContext.setLineDash([]);
+}
+
