@@ -105,10 +105,15 @@ function draw() {
     x += v * dt;
   }
 
-  // ===== Σ2 ΒΟΛΗ =====
+// ===== Σ2 ΒΟΛΗ =====
 if (phase === 2) {
 
-  // --- ΑΝ ΒΓΗΚΕ ΕΚΤΟΣ CANVAS → ΣΤΑΜΑΤΑ ---
+  // 1. πρώτα κίνηση
+  vy2 += g * dt;
+  y2  += vy2 * dt;
+  x2  += vx2 * dt;
+
+  // 2. μετά έλεγχος
   const X2abs = X0 + x * scale + x2 * scale;
 
   if (X2abs < -50 || X2abs > width + 50 || y2 > height + 50) {
@@ -116,11 +121,8 @@ if (phase === 2) {
     hitSpring = false;
     lockEverythingExceptReset();
   }
-
-  vy2 += g * dt;
-  y2  += vy2 * dt;
-  x2  += vx2 * dt;
 }
+
 
     vy2 += g * dt;
     y2  += vy2 * dt;
