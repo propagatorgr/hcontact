@@ -230,7 +230,50 @@ function readUI() {
   const A = Math.sqrt(2 * E / k);
   AvEl.textContent = A.toFixed(3);
 }
+function drawSystem() {
+  const X1 = X0 + x * scale;
+  const X2 = X1 + x2 * scale;
 
+  // έδαφος
+  stroke(0);
+  line(0, Y, width, Y);
+
+  // τοίχος
+  fill(180);
+  rect(770, Y - 70, 25, 70);
+
+  // Σ1
+  fill(200,120,120);
+  rect(X1 - W1/2, Y - H1, W1, H1);
+
+  // κέντρο Σ1
+  fill(0);
+  noStroke();
+  ellipse(X1, Y - H1/2, 7, 7);
+
+  // Σ2
+  fill(120);
+  rect(X2 - W2/2, y2, W2, H2);
+
+  // ελατήριο
+  stroke(0);
+  noFill();
+  beginShape();
+
+  let a = X1 + W1/2;
+  let b = 770;
+  let yy = Y - H1/2;
+
+  vertex(a, yy);
+
+  for (let i = 1; i <= 16; i++) {
+    let t = i / 16;
+    vertex(lerp(a, b, t), yy + (i % 2 ? 10 : -10));
+  }
+
+  vertex(b, yy);
+  endShape();
+}
 function drawCriticalLines(xCrit) {
   stroke(0,120);
   drawingContext.setLineDash([6,6]);
