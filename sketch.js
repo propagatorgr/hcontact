@@ -47,6 +47,7 @@ function setup() {
   AvEl  = document.getElementById("Av");
   XcvEl = document.getElementById("Xcv");
 
+  // ✅ ΕΔΩ ΗΤΑΝ ΤΟ CRASH (stopMotion δεν υπήρχε)
   startBtn.onclick  = startMotion;
   resumeBtn.onclick = resumeMotion;
   stopBtn.onclick   = stopMotion;
@@ -59,8 +60,10 @@ function draw() {
   background(245);
   readUI();
 
+  const xCrit = getXcrit();
+
   if (phase === 4) {
-    drawCriticalLines(getXcrit());
+    drawCriticalLines(xCrit);
     drawSystem();
     if (hitSpring) {
       fill(0,120,0);
@@ -72,14 +75,13 @@ function draw() {
 
   if (paused) {
     adjustVelocityToEnergy();
-    drawCriticalLines(getXcrit());
+    drawCriticalLines(xCrit);
     drawSystem();
     return;
   }
 
   const omega12 = Math.sqrt(k / (m1 + m2));
   const omega1  = Math.sqrt(k / m1);
-  const xCrit   = getXcrit();
 
   // ===== ΤΑΛΑΝΤΩΣΗ ΜΑΖΙ =====
   if (phase === 1) {
@@ -87,11 +89,8 @@ function draw() {
     x += v * dt;
 
     if (Math.abs(x) >= xCrit) {
-
-      // 👉 εδώ αρχίζει η σωστή μεταφορά κίνησης
-      vx2 = v;        // συνεχής ταχύτητα
+      vx2 = v;
       vy2 = 0;
-
       x2 = 0;
       y2 = Y - H1 - H2;
 
@@ -100,14 +99,15 @@ function draw() {
     }
   }
 
-  // ===== Σ1 μόνο του =====
-  if (phase === 2 || phase === 3) {
+  // ===== Σ1 ΜΟΝΟ =====
+  if (phase === 2) {
     v += -omega1 * omega1 * x * dt;
     x += v * dt;
   }
 
-  // ===== ΟΡΙΖΟΝΤΙΑ ΒΟΛΗ Σ2 =====
+  // ===== Σ2 ΒΟΛΗ =====
   if (phase === 2) {
+
     vy2 += g * dt;
     y2  += vy2 * dt;
     x2  += vx2 * dt;
@@ -116,18 +116,15 @@ function draw() {
     const Xspring = 770;
     const X2abs = X0 + x * scale + x2 * scale;
 
-    // --- πάνω στο ελατήριο ---
     if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
       y2 = ySpring - H2;
       vy2 = 0;
       v = 0;
-
       hitSpring = true;
       phase = 4;
       lockEverythingExceptReset();
     }
 
-    // --- αλλού ---
     if (y2 > height) {
       hitSpring = false;
       phase = 4;
@@ -139,14 +136,7 @@ function draw() {
   drawSystem();
 }
 
-// ================= ΒΟΗΘΗΤΙΚΑ =================
-function getXcrit() {
-  const omega12 = Math.sqrt(k / (m1 + m2));
-  const xCrit = mu * g / (omega12 * omega12);
-  XcvEl.textContent = xCrit.toFixed(3);
-  return xCrit;
-}
-
+// ================= ΕΝΕΡΓΕΙΑ =================
 function adjustVelocityToEnergy() {
   const totalMass = m1 + m2;
   const potential = 0.5 * k * x * x;
@@ -168,36 +158,26 @@ function startMotion() {
   phase = 1;
   paused = false;
 
-  // ✅ sliders κλειδώνουν
   lockSliders(true);
 
-  // ✅ κουμπιά
   startBtn.disabled  = true;
-  stopBtn.disabled   = false;   // ⭐ ΕΔΩ ΕΙΝΑΙ ΤΟ FIX
+  stopBtn.disabled   = false;
   resumeBtn.disabled = true;
 }
 
+function stopMotion() {   // ✅ ΥΠΑΡΧΕΙ ΤΩΡΑ
+  paused = true;
+  EEl.disabled = false;
+}
+
 function resumeMotion() {
-
-  // Από STOP
-  if (paused) {
-    paused = false;
-    lockSliders(true);
-    return;
-  }
-
-  // Από απώλεια επαφής
-  if (phase === 2) {
-    lockSliders(true);
-  }
+  paused = false;
+  lockSliders(true);
 }
 
 function resetSystem() {
-
-  // ================= ΦΥΣΙΚΗ ΚΑΤΑΣΤΑΣΗ =================
   x = 0;
   v = 0;
-
   x2 = 0;
   vx2 = 0;
   vy2 = 0;
@@ -208,58 +188,27 @@ function resetSystem() {
   paused = false;
   hitSpring = false;
 
-  // ================= ΑΡΧΙΚΕΣ ΤΙΜΕΣ SLIDERS =================
   m1El.value = 4;
   m2El.value = 2;
   kEl.value  = 200;
   muEl.value = 0.50;
   EEl.value  = 0;
 
-  // ================= ΕΝΗΜΕΡΩΣΗ UI =================
-  m1vEl.textContent = "4";
-  m2vEl.textContent = "2";
-  kvEl.textContent  = "200";
-  muvEl.textContent = "0.50";
-  EvEl.textContent  = "0.0";
-
-  AvEl.textContent  = "0.000";
-  XcvEl.textContent = "0.000";
-
-  // ================= ΚΟΥΜΠΙΑ =================
   startBtn.disabled  = false;
-  resumeBtn.disabled = true;
   stopBtn.disabled   = true;
-  resetBtn.disabled  = false;
+  resumeBtn.disabled = true;
 
-  // ================= SLIDERS =================
   lockSliders(false);
 }
 
-// ================= LOCK =================
-function lockSliders(lock) {
-  m1El.disabled = lock;
-  m2El.disabled = lock;
-  kEl.disabled  = lock;
-  muEl.disabled = lock;
-  EEl.disabled  = lock;
+// ================= UTIL =================
+function getXcrit() {
+  const omega12 = Math.sqrt(k / (m1 + m2));
+  const xCrit = mu * g / (omega12 * omega12);
+  XcvEl.textContent = xCrit.toFixed(3);
+  return xCrit;
 }
 
-function lockEverythingExceptReset() {
-  startBtn.disabled  = true;
-  resumeBtn.disabled = true;
-  stopBtn.disabled   = true;
-  lockSliders(true);
-  resetBtn.disabled = false;
-}
-
-function lockForPauseResumeOnly() {
-  startBtn.disabled  = true;
-  stopBtn.disabled   = true;
-  resetBtn.disabled  = true;
-  resumeBtn.disabled = false;
-}
-
-// ================= UI =================
 function readUI() {
   m1 = +m1El.value;
   m2 = +m2El.value;
@@ -277,7 +226,7 @@ function readUI() {
   AvEl.textContent = A.toFixed(3);
 }
 
-// ================= ΣΧΕΔΙΑΣΗ =================
+// ================= DRAW =================
 function drawSystem() {
   const X1 = X0 + x * scale;
   const X2 = X1 + x2 * scale;
@@ -315,4 +264,28 @@ function drawCriticalLines(xCrit) {
   line(X0 + xCrit * scale, Y - 90, X0 + xCrit * scale, Y + 30);
   line(X0 - xCrit * scale, Y - 90, X0 - xCrit * scale, Y + 30);
   drawingContext.setLineDash([]);
+}
+
+// ================= LOCK =================
+function lockSliders(lock) {
+  m1El.disabled = lock;
+  m2El.disabled = lock;
+  kEl.disabled  = lock;
+  muEl.disabled = lock;
+  EEl.disabled  = lock;
+}
+
+function lockEverythingExceptReset() {
+  startBtn.disabled  = true;
+  resumeBtn.disabled = true;
+  stopBtn.disabled   = true;
+  lockSliders(true);
+  resetBtn.disabled = false;
+}
+
+function lockForPauseResumeOnly() {
+  startBtn.disabled  = true;
+  stopBtn.disabled   = true;
+  resetBtn.disabled  = true;
+  resumeBtn.disabled = false;
 }
