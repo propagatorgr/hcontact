@@ -168,12 +168,13 @@ function startMotion() {
   phase = 1;
   paused = false;
 
+  // ✅ sliders κλειδώνουν
   lockSliders(true);
-}
 
-function stopMotion() {
-  paused = true;
-  EEl.disabled = false;
+  // ✅ κουμπιά
+  startBtn.disabled  = true;
+  stopBtn.disabled   = false;   // ⭐ ΕΔΩ ΕΙΝΑΙ ΤΟ FIX
+  resumeBtn.disabled = true;
 }
 
 function resumeMotion() {
