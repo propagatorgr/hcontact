@@ -55,16 +55,17 @@ function setup() {
 
   y2 = Y - H1 - H2;
 }
-
 function draw() {
   background(245);
   readUI();
 
   const xCrit = getXcrit();
 
+  // ===== ΤΕΛΙΚΟ ΣΤΑΜΑ =====
   if (phase === 4) {
     drawCriticalLines(xCrit);
     drawSystem();
+
     if (hitSpring) {
       fill(0,120,0);
       textSize(20);
@@ -73,6 +74,7 @@ function draw() {
     return;
   }
 
+  // ===== PAUSE =====
   if (paused) {
     adjustVelocityToEnergy();
     drawCriticalLines(xCrit);
@@ -89,8 +91,9 @@ function draw() {
     x += v * dt;
 
     if (Math.abs(x) >= xCrit) {
-      vx2 = v;
+      vx2 = v;   // συνεχής ταχύτητα
       vy2 = 0;
+
       x2 = 0;
       y2 = Y - H1 - H2;
 
@@ -105,44 +108,33 @@ function draw() {
     x += v * dt;
   }
 
-// ===== Σ2 ΒΟΛΗ =====
-if (phase === 2) {
+  // ===== Σ2 ΒΟΛΗ =====
+  if (phase === 2) {
 
-  // 1. πρώτα κίνηση
-  vy2 += g * dt;
-  y2  += vy2 * dt;
-  x2  += vx2 * dt;
-
-  // 2. μετά έλεγχος
-  const X2abs = X0 + x * scale + x2 * scale;
-
-  if (X2abs < -50 || X2abs > width + 50 || y2 > height + 50) {
-    phase = 4;
-    hitSpring = false;
-    lockEverythingExceptReset();
-  }
-}
-
-
+    // --- ΚΙΝΗΣΗ ---
     vy2 += g * dt;
     y2  += vy2 * dt;
     x2  += vx2 * dt;
 
+    // --- ΥΠΟΛΟΓΙΣΜΟΙ ---
+    const X2abs = X0 + x * scale + x2 * scale;
     const ySpring = Y - H1 / 2;
     const Xspring = 770;
-    const X2abs = X0 + x * scale + x2 * scale;
 
-    if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
-      y2 = ySpring - H2;
-      vy2 = 0;
-      v = 0;
-      hitSpring = true;
+    // --- ΕΞΟΔΟΣ ΑΠΟ CANVAS ---
+    if (X2abs < -50 || X2abs > width + 50 || y2 > height + 50) {
       phase = 4;
+      hitSpring = false;
       lockEverythingExceptReset();
     }
 
-    if (y2 > height) {
-      hitSpring = false;
+    // --- ΠΡΟΣΚΡΟΥΣΗ ΣΤΟ ΕΛΑΤΗΡΙΟ ---
+    else if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
+      y2 = ySpring - H2;
+      vy2 = 0;
+      v = 0;
+
+      hitSpring = true;
       phase = 4;
       lockEverythingExceptReset();
     }
@@ -152,6 +144,8 @@ if (phase === 2) {
   drawSystem();
 }
 
+
+ 
 // ================= ΕΝΕΡΓΕΙΑ =================
 function adjustVelocityToEnergy() {
   const totalMass = m1 + m2;
