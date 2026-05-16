@@ -109,36 +109,51 @@ function draw() {
   }
 
   // ===== Σ2 ΒΟΛΗ =====
-  if (phase === 2) {
+ if (phase === 2) {
 
-    // --- ΚΙΝΗΣΗ ---
-    vy2 += g * dt;
-    y2  += vy2 * dt;
-    x2  += vx2 * dt;
+  // --- ΠΡΟΗΓΟΥΜΕΝΗ ΘΕΣΗ ---
+  const prevY = y2;
 
-    // --- ΥΠΟΛΟΓΙΣΜΟΙ ---
-    const X2abs = X0 + x * scale + x2 * scale;
-    const ySpring = Y - H1 / 2;
-    const Xspring = 770;
+  // --- ΚΙΝΗΣΗ ---
+  vy2 += g * dt;
+  y2  += vy2 * dt;
+  x2  += vx2 * dt;
 
-    // --- ΕΞΟΔΟΣ ΑΠΟ CANVAS ---
-    if (X2abs<-50||X2abs>width+50||y2>height+50){
-      phase = 4;
-      hitSpring = false;
-      lockEverythingExceptReset();
-    }
+  // --- ΥΠΟΛΟΓΙΣΜΟΙ ---
+  const X2abs = X0 + x * scale + x2 * scale;
+  const ySpring = Y - H1 / 2;
+  const Xspring = 770;
+  const groundY = Y - H2;
 
-    // --- ΠΡΟΣΚΡΟΥΣΗ ΣΤΟ ΕΛΑΤΗΡΙΟ ---
-    else if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
-      y2 = ySpring - H2;
-      vy2 = 0;
-      v = 0;
+  // ✅ 1. ΠΑΤΩΜΑ (ΔΙΕΛΕΥΣΗ)
+  if (prevY < groundY && y2 >= groundY) {
+    y2 = groundY;
+    vy2 = 0;
+    v = 0;
 
-      hitSpring = true;
-      phase = 4;
-      lockEverythingExceptReset();
-    }
+    hitSpring = false;
+    phase = 4;
+    lockEverythingExceptReset();
   }
+
+  // ✅ 2. ΕΞΟΔΟΣ ΑΠΟ CANVAS
+  else if (X2abs < -50 || X2abs > width + 50 || y2 > height + 50) {
+    phase = 4;
+    hitSpring = false;
+    lockEverythingExceptReset();
+  }
+
+  // ✅ 3. ΕΛΑΤΗΡΙΟ
+  else if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
+    y2 = ySpring - H2;
+    vy2 = 0;
+    v = 0;
+
+    hitSpring = true;
+    phase = 4;
+    lockEverythingExceptReset();
+  }
+}
 
   drawCriticalLines(xCrit);
   drawSystem();
