@@ -90,7 +90,7 @@ function draw() {
   }
 
   // ===== Σ1 μόνο του =====
-  if (phase === 3 || phase === 4) {
+  if (phase === 3 ) {
     v += -omega1 * omega1 * x * dt;
     x += v * dt;
   }
@@ -100,20 +100,30 @@ function draw() {
     vy2 += g * dt;
     y2 += vy2 * dt;
     x2 += vx2 * dt;
-
-    const Xspring = 770; // θέση ελατηρίου
+  
     const ySpring = Y - H1 / 2;
-
-    const X2abs = X0 + x * scale + x2 * scale;
-
     // ✅ μόνο αν είναι πάνω από το ελατήριο
-    if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
-      y2 = ySpring - H2;
-      vy2 = 0;
-      v = 0;
-      phase = 4;
-      lockEverythingExceptReset();
-    }
+    const Xspring = 770;
+const X2abs = X0 + x * scale + x2 * scale;
+
+// ---- ΠΤΩΣΗ ΠΑΝΩ ΣΤΟ ΕΛΑΤΗΡΙΟ ----
+if (y2 + H2 >= ySpring && Math.abs(X2abs - Xspring) < 40) {
+  y2 = ySpring - H2;
+  vy2 = 0;
+  v = 0;
+  phase = 4;
+
+  hitSpring = true;   // ✅ νέο flag
+  lockEverythingExceptReset();
+}
+
+// ---- ΠΤΩΣΗ ΕΚΤΟΣ ΕΛΑΤΗΡΙΟΥ ----
+if (y2 > height) {
+  phase = 4;
+
+  hitSpring = false;  // ✅ νέο flag
+  lockEverythingExceptReset();
+}
 
     // ✅ αλλιώς πέφτει απλά κάτω (χωρίς μήνυμα)
     if (y2 > height) {
