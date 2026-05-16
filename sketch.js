@@ -168,6 +168,12 @@ function startMotion() {
 function stopMotion() {   // ✅ ΥΠΑΡΧΕΙ ΤΩΡΑ
   paused = true;
   EEl.disabled = false;
+  
+// ✅ κουμπιά
+  stopBtn.disabled   = true;
+  resumeBtn.disabled = false;   // ⭐ ΑΥΤΟ ΕΛΕΙΠΕ
+  startBtn.disabled  = true;
+
 }
 
 function resumeMotion() {
